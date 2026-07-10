@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="shortcuts-logo.jpg" alt="shortcuts" width="160">
   <h1>Shortcuts</h1>
   <p><em>Your personal keyboard-shortcut cheat sheet, one command away — in every shell</em></p>
 </div>
