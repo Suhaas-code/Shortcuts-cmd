@@ -26,14 +26,14 @@ info "Installing shortcuts..."
 mkdir -p "$BIN_DIR" "$CONFIG_DIR"
 
 info "Downloading script -> $BIN_DIR/shortcuts"
-fetch "${BASE_URL}/shortcuts" "$BIN_DIR/shortcuts"
+fetch "${BASE_URL}/shortcuts.sh" "$BIN_DIR/shortcuts"
 chmod +x "$BIN_DIR/shortcuts"
 
 if [ -f "$DATA_FILE" ]; then
   info "Keeping existing shortcuts at $DATA_FILE"
 else
   info "Installing default shortcuts -> $DATA_FILE"
-  fetch "${BASE_URL}/shortcuts.default.txt" "$DATA_FILE"
+  fetch "${BASE_URL}/shortcuts.txt" "$DATA_FILE"
 fi
 
 # Ensure ~/.local/bin is on PATH.

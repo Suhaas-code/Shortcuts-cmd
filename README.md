@@ -23,11 +23,17 @@
 
 ---
 
-`shortcuts` is a tiny terminal command that prints your own list of keyboard
-shortcuts, grouped into sections and neatly aligned — then lets you edit that
-list in your favorite editor. It behaves **identically** on Windows PowerShell,
-cmd, Linux, macOS, WSL, and Git Bash because every environment reads the same
-plain-text data file. No runtime, no dependencies, one script per platform.
+You're mid-flow in a terminal and blank on the shortcut to split a pane, jump
+to end-of-line, or search scrollback — so you alt-tab to a notes app, dig
+through a wiki, or search the web, and lose the thread. The shortcut you need
+is never in the terminal you need it in.
+
+`shortcuts` fixes that: it's a tiny command that prints your own personal
+cheat sheet, grouped into sections and neatly aligned, right where you're
+already working — then lets you edit that list in your favorite editor. It
+behaves **identically** on Windows PowerShell, cmd, Linux, macOS, WSL, and
+Git Bash because every environment reads the same plain-text data file. No
+runtime, no dependencies, one script per platform.
 
 ```
 > shortcuts
@@ -50,8 +56,10 @@ Opening shortcuts in the default editor...
   (or Notepad on Windows). Add, remove, or reorganize anything.
 - **Searches** — `shortcuts search <term>` filters rows by keyword across keys and
   descriptions, keeping only the sections that match.
-- **Customizable colors** — set section/key/description colors right inside the
-  data file with `// color` lines (see [Customizing](#customizing)).
+- **Highlights individual keys** — wrap a key in `` `backticks` `` and it renders
+  in its own color, e.g. `` `Alt` + `Shift` + `+` ``, distinct from the `+` connectors.
+- **Customizable colors** — set section/key/description/code colors right inside
+  the data file with `// color` lines (see [Customizing](#customizing)).
 - **Self-maintaining** — `shortcuts update` pulls the latest script; `shortcuts reset`
   restores the defaults; `shortcuts path` tells you where your file lives.
 - **Respects your terminal** — color turns off automatically when piped or when
@@ -91,6 +99,8 @@ one-line command to enable it in your **current** shell without restarting.
 | `shortcuts version` | Print the version |
 | `shortcuts help` | Show help |
 
+`shortcuts help` starts with a one-line usage summary, then the full table above.
+
 ## Customizing
 
 Run `shortcuts edit` and make it yours. The format is plain text:
@@ -105,6 +115,9 @@ key<TAB>description
 - **`# Section`** — a section header.
 - **`key<TAB>description`** — one shortcut. Separate the two with a **Tab**
   (a run of 2+ spaces also works). Columns are aligned automatically on print.
+- **`` `key` ``** — wrap individual keys in backticks to highlight them in a
+  distinct color, separate from connectors like `+` or `/` left outside the
+  backticks.
 - **`// ...`** — a comment. Ignored when printing.
 - Blank lines are ignored.
 
@@ -116,8 +129,8 @@ git st      status
 git co      checkout
 
 # tmux
-Ctrl+b %    split vertical
-Ctrl+b "    split horizontal
+`Ctrl+b` `%`    split vertical
+`Ctrl+b` `"`    split horizontal
 ```
 
 ### Colors
@@ -129,14 +142,16 @@ travels with your shortcuts:
 // color header = bold cyan
 // color key    = green
 // color desc   = default
+// color code   = bold yellow
 ```
 
-- **Targets:** `header`, `key`, `desc`.
+- **Targets:** `header`, `key`, `desc`, and `code` (text inside `` `backticks` ``).
 - **Colors:** `black red green yellow blue magenta cyan white gray`, plus
   `bright-*` variants (e.g. `bright-magenta`).
 - **Styles:** `bold dim italic underline`. Combine with spaces (`bold bright-cyan`).
 - Use `default` for your terminal's normal color. Set `NO_COLOR=1` to disable
   color entirely.
+- `shortcuts.txt` ships with these defaults already set, ready to tweak.
 
 ## Where things live
 
@@ -151,19 +166,25 @@ travels with your shortcuts:
 
 ## How it works
 
-Two dependency-free scripts — [`shortcuts.ps1`](shortcuts.ps1) for PowerShell and
-[`shortcuts`](shortcuts) (Bash) for everything POSIX — implement the exact same
-commands and the exact same rendering algorithm. Both read the same
-[`shortcuts.default.txt`](shortcuts.default.txt) format, so output is identical
-regardless of where you run it. Distribution is via GitHub Releases; the install
-one-liners and `shortcuts update` fetch the `releases/latest` assets.
+Two dependency-free scripts — [`src/shortcuts.ps1`](src/shortcuts.ps1) for
+PowerShell and [`src/shortcuts.sh`](src/shortcuts.sh) for everything POSIX —
+implement the exact same commands and the exact same rendering algorithm. Both
+read the same [`src/shortcuts.txt`](src/shortcuts.txt) format, so output is
+identical regardless of where you run it. Distribution is via GitHub Releases;
+the install one-liners and `shortcuts update` fetch the `releases/latest`
+assets (flattened to plain filenames, independent of this repo's folders).
 
 ```
-install.ps1 / install.sh   one-line installers (irm / curl)
-shortcuts.ps1              PowerShell implementation
-shortcuts                  POSIX shell implementation
-shortcuts.default.txt      the default cheat sheet + color config
+install.ps1 / install.sh   one-line installers, run these (irm / curl)
+src/shortcuts.ps1          PowerShell implementation
+src/shortcuts.sh           POSIX shell implementation
+src/shortcuts.txt          the default cheat sheet + color config
 ```
+
+> Installed filenames differ slightly from source: the POSIX script installs
+> as `shortcuts` (no extension) so it runs as a bare command, and the data
+> file installs as your personal `shortcuts.txt` in the config dir below —
+> separate from the `src/shortcuts.txt` template in this repo.
 
 ## License
 

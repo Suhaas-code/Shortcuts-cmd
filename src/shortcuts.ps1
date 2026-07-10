@@ -7,7 +7,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$VERSION  = '1.0.0'
+$VERSION  = '1.1.0'
 $REPO     = 'Suhaas-code/Shortcuts-cmd'
 $BASE_URL = "https://github.com/$REPO/releases/latest/download"
 
@@ -23,6 +23,7 @@ $script:Rst = if ($script:UseColor) { "$e[0m" } else { '' }
 $script:SpecHeader = 'bold cyan'
 $script:SpecKey    = 'green'
 $script:SpecDesc   = 'default'
+$script:SpecCode   = 'bold yellow'
 
 $script:AnsiMap = @{
     'bold' = 1; 'dim' = 2; 'italic' = 3; 'underline' = 4
@@ -54,6 +55,7 @@ function Read-ColorDirectives([string[]] $lines) {
                 'key'         { $script:SpecKey = $val }
                 'desc'        { $script:SpecDesc = $val }
                 'description' { $script:SpecDesc = $val }
+                'code'        { $script:SpecCode = $val }
             }
         }
     }
@@ -61,6 +63,19 @@ function Read-ColorDirectives([string[]] $lines) {
 
 function Format-Colored([string] $code, [string] $text) {
     if ($code) { "$code$text$($script:Rst)" } else { $text }
+}
+
+# Splits text on `backticks`; even-index segments use $baseColor, odd-index (inside
+# backticks) use $codeColor. Backticks themselves are stripped from the output.
+function Format-Field([string] $text, [string] $baseColor, [string] $codeColor) {
+    $parts = $text -split '`'
+    $sb = New-Object System.Text.StringBuilder
+    for ($i = 0; $i -lt $parts.Count; $i++) {
+        if ($parts[$i] -eq '') { continue }
+        $c = if ($i % 2 -eq 0) { $baseColor } else { $codeColor }
+        [void]$sb.Append((Format-Colored $c $parts[$i]))
+    }
+    $sb.ToString()
 }
 
 function Die($msg) { Write-Error "shortcuts: $msg"; exit 1 }
@@ -76,7 +91,7 @@ function Confirm-Data {
     $df = Get-DataFile
     if (-not (Test-Path $df)) {
         New-Item -ItemType Directory -Force -Path (Get-ConfigDir) | Out-Null
-        try { Get-File "$BASE_URL/shortcuts.default.txt" $df }
+        try { Get-File "$BASE_URL/shortcuts.txt" $df }
         catch { Die "no shortcuts file at $df and default download failed. Run: shortcuts reset" }
     }
 }
@@ -89,6 +104,7 @@ function Show-Shortcuts([string] $Filter) {
     $cHdr = ConvertTo-Ansi $script:SpecHeader
     $cKey = ConvertTo-Ansi $script:SpecKey
     $cDesc = ConvertTo-Ansi $script:SpecDesc
+    $cCode = ConvertTo-Ansi $script:SpecCode
     $sections = New-Object System.Collections.ArrayList
     $cur = $null
     $maxk = 0
@@ -115,7 +131,8 @@ function Show-Shortcuts([string] $Filter) {
             [void]$sections.Add($cur)
         }
         [void]$cur.Rows.Add(@{ Key = $k; Desc = $d })
-        if ($k.Length -gt $maxk) { $maxk = $k.Length }
+        $kVisLen = ($k -replace '`', '').Length
+        if ($kVisLen -gt $maxk) { $maxk = $kVisLen }
     }
 
     $pad = $maxk + 2
@@ -132,9 +149,11 @@ function Show-Shortcuts([string] $Filter) {
         Write-Host (Format-Colored $cHdr "=== $($s.Name) ===")
         foreach ($r in $rows) {
             if ($r.Desc -eq '') {
-                Write-Host (Format-Colored $cKey $r.Key)
+                Write-Host (Format-Field $r.Key $cKey $cCode)
             } else {
-                Write-Host ((Format-Colored $cKey $r.Key.PadRight($pad)) + (Format-Colored $cDesc $r.Desc))
+                $kVisLen = ($r.Key -replace '`', '').Length
+                $padSpaces = ' ' * [Math]::Max(0, $pad - $kVisLen)
+                Write-Host ((Format-Field $r.Key $cKey $cCode) + $padSpaces + (Format-Field $r.Desc $cDesc $cCode))
             }
         }
     }
@@ -158,7 +177,7 @@ function Invoke-Reset([string[]] $args) {
         if ($ans -notmatch '^(y|yes)$') { Die 'cancelled' }
     }
     New-Item -ItemType Directory -Force -Path (Get-ConfigDir) | Out-Null
-    Get-File "$BASE_URL/shortcuts.default.txt" $df
+    Get-File "$BASE_URL/shortcuts.txt" $df
     Write-Host "Restored defaults to $df"
 }
 
@@ -171,9 +190,10 @@ function Invoke-Update {
 
 function Show-Help {
     @"
+Usage: shortcuts [search <term>|edit|path|reset [-y]|update|version|help]
+
 shortcuts — customizable keyboard-shortcut reference (v$VERSION)
 
-Usage:
   shortcuts                 Print your shortcuts
   shortcuts search <term>   Filter shortcuts by keyword
   shortcuts edit            Open your shortcuts in `$env:EDITOR (else notepad)

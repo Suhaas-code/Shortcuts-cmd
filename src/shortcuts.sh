@@ -3,7 +3,7 @@
 # https://github.com/Suhaas-code/Shortcuts-cmd
 set -euo pipefail
 
-VERSION="1.0.0"
+VERSION="1.1.0"
 REPO="Suhaas-code/Shortcuts-cmd"
 BASE_URL="https://github.com/${REPO}/releases/latest/download"
 
@@ -23,6 +23,7 @@ if [ -n "${NO_COLOR:-}" ] || [ ! -t 1 ]; then COLOR_ON=0; else COLOR_ON=1; fi
 SPEC_HDR="bold cyan"
 SPEC_KEY="green"
 SPEC_DESC="default"
+SPEC_CODE="bold yellow"
 
 ansi_code() { # color/style name -> SGR number ("" if unknown)
   case "$1" in
@@ -70,6 +71,7 @@ parse_color_directives() { # file  — read `// color <target> = <spec>` lines
       header) SPEC_HDR="$val";;
       key) SPEC_KEY="$val";;
       desc|description) SPEC_DESC="$val";;
+      code) SPEC_CODE="$val";;
     esac
   done < "$1"
 }
@@ -92,7 +94,7 @@ ensure_data() {
   local df; df="$(data_file)"
   if [ ! -f "$df" ]; then
     mkdir -p "$(config_dir)"
-    if ! fetch "${BASE_URL}/shortcuts.default.txt" "$df" 2>/dev/null; then
+    if ! fetch "${BASE_URL}/shortcuts.txt" "$df" 2>/dev/null; then
       die "no shortcuts file at $df and default download failed. Run: shortcuts reset"
     fi
   fi
@@ -101,14 +103,22 @@ ensure_data() {
 # --- rendering -------------------------------------------------------------
 # Reads data on stdin, prints aligned/colored output. Optional $1 = filter term.
 render() {
-  local filter="${1:-}" hdr key desc rst
+  local filter="${1:-}" hdr key desc code rst
   hdr="$(ansi_seq "$SPEC_HDR")"
   key="$(ansi_seq "$SPEC_KEY")"
   desc="$(ansi_seq "$SPEC_DESC")"
+  code="$(ansi_seq "$SPEC_CODE")"
   [ "$COLOR_ON" = 1 ] && rst=$'\033[0m' || rst=""
-  awk -v HDR="$hdr" -v KEY="$key" -v DESC="$desc" -v RST="$rst" -v filter="$filter" '
+  awk -v HDR="$hdr" -v KEY="$key" -v DESC="$desc" -v CODE="$code" -v RST="$rst" -v filter="$filter" '
     function trim(s){ sub(/^[ \t]+/,"",s); sub(/[ \t]+$/,"",s); return s }
-    function wrap(c,s){ return (c=="") ? s : c s RST }
+    function wrap(c,s){ return (c=="" || s=="") ? s : c s RST }
+    # colorize a field: text outside `backticks` gets basec, text inside gets CODE
+    function colorize(s, basec,   n,arr,i,out){
+      n=split(s,arr,"`")
+      out=""
+      for(i=1;i<=n;i++) out = out wrap((i%2==1)?basec:CODE, arr[i])
+      return out
+    }
     {
       line=$0
       if (line ~ /^[[:space:]]*$/) next
@@ -129,7 +139,8 @@ render() {
       if (n_sec==0){ n_sec=1; sec_name[1]="General"; sec_rows[1]=0 }
       r=++sec_rows[n_sec]
       rk[n_sec,r]=k; rd[n_sec,r]=d
-      if (length(k)>maxk) maxk=length(k)
+      kv=k; gsub(/`/,"",kv)                    # visible width ignores backticks
+      if (length(kv)>maxk) maxk=length(kv)
     }
     END{
       pad=maxk+2
@@ -151,8 +162,12 @@ render() {
         print wrap(HDR, "=== " sec_name[i] " ===")
         for(m=1;m<=cnt;m++){
           j=mrows[m]; kk=rk[i,j]; dd=rd[i,j]
-          if(dd==""){ print wrap(KEY, kk) }
-          else { printf "%s%s\n", wrap(KEY, sprintf("%-*s", pad, kk)), wrap(DESC, dd) }
+          kv=kk; gsub(/`/,"",kv)
+          if(dd==""){ print colorize(kk, KEY) }
+          else {
+            padn=pad-length(kv); if(padn<0) padn=0
+            printf "%s%s%s\n", colorize(kk,KEY), sprintf("%" padn "s",""), colorize(dd,DESC)
+          }
         }
       }
     }
@@ -189,7 +204,7 @@ cmd_reset() {
     case "$ans" in y|Y|yes|YES) ;; *) die "cancelled" ;; esac
   fi
   mkdir -p "$(config_dir)"
-  fetch "${BASE_URL}/shortcuts.default.txt" "$df" || die "download failed"
+  fetch "${BASE_URL}/shortcuts.txt" "$df" || die "download failed"
   printf 'Restored defaults to %s\n' "$df"
 }
 
@@ -197,7 +212,7 @@ cmd_update() {
   local dest; dest="$(command -v shortcuts || true)"
   [ -n "$dest" ] || dest="$HOME/.local/bin/shortcuts"
   local tmp; tmp="$(mktemp)"
-  fetch "${BASE_URL}/shortcuts" "$tmp" || die "download failed"
+  fetch "${BASE_URL}/shortcuts.sh" "$tmp" || die "download failed"
   chmod +x "$tmp"
   mv "$tmp" "$dest"
   printf 'Updated shortcuts at %s\n' "$dest"
@@ -205,9 +220,10 @@ cmd_update() {
 
 cmd_help() {
   cat <<EOF
+Usage: shortcuts [search <term>|edit|path|reset [-y]|update|version|help]
+
 shortcuts — customizable keyboard-shortcut reference (v${VERSION})
 
-Usage:
   shortcuts                 Print your shortcuts
   shortcuts search <term>   Filter shortcuts by keyword
   shortcuts edit            Open your shortcuts in \$EDITOR
