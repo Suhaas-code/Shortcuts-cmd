@@ -7,10 +7,10 @@
 // Colors (edit these). Color names: black red green yellow blue magenta cyan
 // white gray, plus bright-* variants (e.g. bright-cyan). Styles: bold dim
 // italic underline. Combine with spaces. Use "default" for the terminal color.
-// color header = bold cyan
-// color key    = green
+// color header = bright-cyan
+// color key    = dim cyan
 // color desc   = default
-// color code   = bold yellow
+// color code   = cyan
 
 # Panes
 `Alt` + `Shift` + `+`	Split pane
