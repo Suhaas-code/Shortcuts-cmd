@@ -15,60 +15,32 @@
 </p>
 
 <p align="center">
-  <a href="#what-it-does">What it does</a> ·
-  <a href="#get-started-30-seconds">Get started</a> ·
+  <a href="#installation">Installation</a> ·
+  <a href="#quick-example">Quick example</a> ·
   <a href="#commands">Commands</a> ·
-  <a href="#customizing">Customizing</a> ·
-  <a href="#where-things-live">Where things live</a>
+  <a href="#customization">Customization</a> ·
+  <a href="docs/">Docs</a>
 </p>
 
 ---
 
-### Your shortcuts, always one command away.
+## Introduction
 
-You're in the middle of a task when your mind blanks on a shortcut. Split a pane. Jump to the end of a line. Search scrollback. Instead of doing what you were doing, you leave the terminal, search on google, ask your AI, dig through notes, or worst case, skim documentation. The interruption costs more than the ease the shortcut ever had.
+You're in the middle of a task when your mind blanks on a shortcut. Split a
+pane. Jump to the end of a line. Search scrollback. Instead of staying in flow,
+you leave the terminal to search the web, ask your AI, or dig through notes —
+and the interruption costs more than the shortcut ever saved.
 
-**shortcuts** does what it says, it keeps what you need, where you work. The default command displays your personal cheat sheet in a clean, organized layout, one command instantly searches it, and another one opens it in your preferred editor. You can also keep personal notes, phone numbers, IP addresses, plaintext passwords, or anything else at a glance for your CLI.
+**shortcuts** keeps what you need where you work. One command prints your
+personal cheat sheet in a clean, aligned, colored layout; another searches it;
+another opens it in your editor. Keep shortcuts, notes, IPs — anything you want
+a glance away in your CLI.
 
-Powered by a single plain-text file, **shortcuts** works consistently across PowerShell, Command Prompt, Linux, macOS, WSL, and Git Bash. It runs entirely offline, never connects to the internet, and only updates when you explicitly run the update command. No runtime. No dependencies. Just a lightweight script for each platform.
+Powered by a single plain-text file and one lightweight script per platform, it
+works identically across PowerShell, cmd, Linux, macOS, WSL, and Git Bash. Fully
+offline, zero dependencies, and updates only when you ask.
 
-
-```
-> shortcuts
-
-=== Panes ===
-Alt + Shift + +           Split pane
-Alt + Shift + -           Split pane horizontally
-Alt + Arrow Keys          Move focus between panes
-...
-
-> shortcuts edit
-Opening shortcuts in the default editor...
-```
-
-## What it does
-
-- **Prints your cheat sheet** — section headers plus auto-aligned `key → description`
-  rows, colored for readability.
-- **Edits in your editor** — `shortcuts edit` opens the data file in `$EDITOR`
-  (or Notepad on Windows). Add, remove, or reorganize anything.
-- **Searches** — `shortcuts search <term>` filters rows by keyword across keys and
-  descriptions, keeping only the sections that match.
-- **Highlights individual keys** — wrap a key in `` `backticks` `` and it renders
-  in its own color, e.g. `` `Alt` + `Shift` + `+` ``, distinct from the `+` connectors.
-- **Markdown-lite formatting** — `#`/`##` headings, `**bold**`/`*italic*`, and
-  `---` rules, adapted for the terminal (see [Customizing](#customizing)).
-- **Customizable colors** — set section/key/description/code colors right inside
-  the data file with `// color` lines (see [Customizing](#customizing)).
-- **Self-maintaining** — `shortcuts update` pulls the latest script; `shortcuts reset`
-  restores the defaults; `shortcuts path` tells you where your file lives; and
-  `shortcuts uninstall` cleanly removes everything it installed.
-- **Neofetch-style `version`** — an ASCII banner showing the version, your current
-  shell/OS environment, shortcut counts, color palette, and the project link.
-- **Respects your terminal** — color turns off automatically when piped or when
-  `NO_COLOR` is set.
-
-## Get started (30 seconds)
+## Installation
 
 **Windows** (PowerShell):
 
@@ -82,14 +54,31 @@ irm https://github.com/Suhaas-code/shortcuts-cmd/releases/latest/download/instal
 curl -fsSL https://github.com/Suhaas-code/shortcuts-cmd/releases/latest/download/install.sh | bash
 ```
 
-The installer drops the script somewhere on your `PATH` and seeds a default
-shortcut list **matched to your environment** — Windows Terminal keys on
-Windows, terminal + readline + tmux keys on Linux, and macOS Terminal / iTerm2
-keys on macOS. Open a **new** terminal afterwards — or the installer prints a
-one-line command to enable it in your **current** shell without restarting.
+The installer puts `shortcuts` on your `PATH` and seeds a default list matched
+to your environment. Open a new terminal, or run the one-liner it prints to use
+it in the current shell. Re-running is safe — it never overwrites your edits.
 
-> Re-running an installer is safe: it upgrades the script but **never overwrites
-> your edited shortcuts**.
+→ Full details, uninstalling, and file locations: **[docs/installation.md](docs/installation.md)**.
+
+## Quick example
+
+```
+> shortcuts
+
+=== Panes ===
+Alt + Shift + +           Split pane
+Alt + Shift + -           Split pane horizontally
+Alt + Arrow Keys          Move focus between panes
+...
+
+> shortcuts search pane
+=== Panes ===
+Alt + Shift + +           Split pane
+...
+
+> shortcuts edit
+Opening shortcuts in the default editor...
+```
 
 ## Commands
 
@@ -101,156 +90,36 @@ one-line command to enable it in your **current** shell without restarting.
 | `shortcuts path` | Print the data file path |
 | `shortcuts reset [-y]` | Restore the default shortcuts |
 | `shortcuts update` | Update the `shortcuts` script itself |
-| `shortcuts version` | Show a neofetch-style banner: version, environment, shortcut counts |
-| `shortcuts uninstall [-y]` | Remove shortcuts completely (script, config, PATH entry) |
+| `shortcuts version` | Neofetch-style banner: version, environment, counts |
+| `shortcuts uninstall [-y]` | Remove shortcuts completely (script, config, PATH) |
 | `shortcuts help` | Show help |
 
-`shortcuts help` starts with a one-line usage summary, then the full table above.
+## Customization
 
-### Uninstalling
-
-`shortcuts uninstall` removes **everything** it installed and nothing else — the
-script, your `shortcuts` config directory, and the single PATH line/entry the
-installer added. It never deletes shared directories like `~/.local/bin`. Add
-`-y` to skip the confirmation prompt.
-
-You can also uninstall straight from the installers, handy if the command isn't
-on your `PATH`:
-
-```powershell
-# Windows
-& ([scriptblock]::Create((irm https://github.com/Suhaas-code/shortcuts-cmd/releases/latest/download/install.ps1))) -Uninstall
-```
-
-```bash
-# Linux · macOS · WSL · Git Bash
-curl -fsSL https://github.com/Suhaas-code/shortcuts-cmd/releases/latest/download/install.sh | bash -s -- --uninstall
-```
-
-## Customizing
-
-Run `shortcuts edit` and make it yours. The format is plain text:
-
-```
-// a line starting with // is a comment (never shown)
-
-# Section Name
-key<TAB>description
-```
-
-- **`# Section`** — a section header. `##` / `###` render as a lighter
-  `--- Section ---` sub-header for a second level of grouping.
-- **`key<TAB>description`** — one shortcut. Separate the two with a **Tab**
-  (a run of 2+ spaces also works). Columns are aligned automatically on print.
-- **`` `key` ``** — wrap individual keys in backticks to highlight them in a
-  distinct color, separate from connectors like `+` or `/` left outside the
-  backticks.
-- **`**bold**`, `*italic*`, `_italic_`** — inline emphasis inside a key or
-  description renders with ANSI styling; the markers themselves never print.
-- **`---`** (a line of only `---`, `***`, or `___`) — a horizontal rule.
-- **`// ansi = off`** — disables **all** color and styling (bold/italic too).
-  Handy when raw escape codes leak through, e.g. some SSH or WSL sessions.
-  Equivalent to `NO_COLOR`, but it travels inside the file.
-- **`// ...`** — a comment. Ignored when printing.
-- Blank lines are ignored.
-
-### Markdown, adapted for the terminal
-
-The format is a deliberate **subset of Markdown** tuned for a TUI cheat sheet.
-What carries over, what changed, and what is intentionally left out:
-
-| Markdown | In `shortcuts` |
-|---|---|
-| `#` / `##` / `###` headings | Section headers — level 1 → `=== Title ===`, level 2+ → `--- Title ---` |
-| `**bold**` | Bold (ANSI) |
-| `*italic*` / `_italic_` | Italic (ANSI) |
-| `` `code` `` | **Repurposed**: highlights an individual **key**, not literal code |
-| `---` / `***` / `___` | Horizontal rule |
-| `<TAB>` between two cells | **shortcuts-specific**: splits a line into `key → description`, auto-aligned |
-| `// comment` | **shortcuts-specific**: a comment / `// color` directive (not Markdown) |
-
-**Different from standard Markdown, on purpose:**
-
-- Backticks mark a **key**, not inline code — so `` `Ctrl` + `Shift` + `W` ``
-  colors each key and leaves the `+` connectors plain.
-- Emphasis is only detected **outside** backticks. Keep real `*` / `_` / `+`
-  keys wrapped in backticks (`` `*` ``) so they are never mistaken for emphasis.
-- A single unmatched `*` or `_` is left as literal text.
-- Emphasis renders as ANSI styling, so it disappears cleanly when color is off
-  (piped output or `NO_COLOR`) — only the markers are stripped.
-
-**Deferred for the TUI experience** (written as plain text if you use them):
-tables, images, links, multi-line code fences, blockquotes, ordered/nested and
-task lists, and raw HTML. A cheat-sheet row is a `key → description` pair, so
-those block elements have no place to render.
-
-Example:
+Run `shortcuts edit` and make it yours. The data file is plain text — `#` for a
+section, a Tab between a key and its description, and `` `backticks` `` to
+highlight individual keys:
 
 ```
 # Git
-git st      status
-git co      checkout
-
-# tmux
-`Ctrl+b` `%`    split vertical
-`Ctrl+b` `"`    split horizontal
+`git` `st`      status
+`git` `co`      checkout
 ```
 
-### Colors
+It also understands a Markdown-lite subset (`##` sub-headings, `**bold**` /
+`*italic*`, `---` rules), per-file color themes via `// color` lines, and
+`// ansi = off` to strip all styling for SSH/WSL sessions.
 
-Colors are configured with `// color` lines in the same file — so your theme
-travels with your shortcuts:
+→ Format reference: **[docs/customization.md](docs/customization.md)** ·
+Colors: **[docs/colors.md](docs/colors.md)**
 
-```
-// color header = bold cyan
-// color key    = green
-// color desc   = default
-// color code   = bold yellow
-```
+## Documentation
 
-- **Targets:** `header`, `key`, `desc`, and `code` (text inside `` `backticks` ``).
-- **Colors:** `black red green yellow blue magenta cyan white gray`, plus
-  `bright-*` variants (e.g. `bright-magenta`).
-- **Styles:** `bold dim italic underline`. Combine with spaces (`bold bright-cyan`).
-- Use `default` for your terminal's normal color. Set `NO_COLOR=1` to disable
-  color entirely.
-- `shortcuts.txt` ships with these defaults already set, ready to tweak.
-
-## Where things live
-
-| | Unix (Linux/macOS/WSL/Git Bash) | Windows (PowerShell/cmd) |
-|---|---|---|
-| Data file | `~/.config/shortcuts/shortcuts.txt` | `%APPDATA%\shortcuts\shortcuts.txt` |
-| Script | `~/.local/bin/shortcuts` | `%LOCALAPPDATA%\Programs\shortcuts\` |
-
-> **Note:** On Windows, a native PowerShell/cmd install and a Git Bash/WSL install
-> keep **separate** data files — each environment is self-contained. `shortcuts path`
-> always tells you which file the current environment uses.
-
-## How it works
-
-Two dependency-free scripts — [`src/shortcuts.ps1`](src/shortcuts.ps1) for
-PowerShell and [`src/shortcuts.sh`](src/shortcuts.sh) for everything POSIX —
-implement the exact same commands and the exact same rendering algorithm. Both
-read the same [`src/shortcuts.txt`](src/shortcuts.txt) format, so output is
-identical regardless of where you run it. Distribution is via GitHub Releases;
-the install one-liners and `shortcuts update` fetch the `releases/latest`
-assets (flattened to plain filenames, independent of this repo's folders).
-
-```
-install.ps1 / install.sh   one-line installers, run these (irm / curl)
-src/shortcuts.ps1          PowerShell implementation
-src/shortcuts.sh           POSIX shell implementation
-src/shortcuts.txt          generic default (fallback / back-compat)
-src/shortcuts/windows.txt  per-environment default cheat sheets
-src/shortcuts/linux.txt      — the installer seeds the one that
-src/shortcuts/macos.txt      matches your OS
-```
-
-> Installed filenames differ slightly from source: the POSIX script installs
-> as `shortcuts` (no extension) so it runs as a bare command, and the data
-> file installs as your personal `shortcuts.txt` in the config dir below —
-> separate from the `src/shortcuts.txt` template in this repo.
+- **[Installation](docs/installation.md)** — install, uninstall, where files live
+- **[Customization](docs/customization.md)** — data-file format and Markdown-lite
+- **[Colors](docs/colors.md)** — theming and turning color off
+- **[Architecture](docs/architecture.md)** — how it works, repo layout, releases
+- **[Contributor guide](docs/contributor-guide.md)** — developing and releasing
 
 ## License
 
