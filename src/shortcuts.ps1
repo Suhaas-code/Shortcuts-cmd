@@ -7,7 +7,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$VERSION  = '1.3.0'
+$VERSION  = '1.4.0'
 $REPO     = 'Suhaas-code/shortcuts-cmd'
 $BASE_URL = "https://github.com/$REPO/releases/latest/download"
 
@@ -48,6 +48,13 @@ function ConvertTo-Ansi([string] $spec) {
 function Read-ColorDirectives([string[]] $lines) {
     foreach ($line in $lines) {
         if ($line -notmatch '^\s*//') { continue }
+        # `// ansi = off` disables all color/styling (avoids ANSI leaking over SSH/WSL).
+        if ($line -match '^\s*//\s*ansi\s*=?\s*(\w+)') {
+            if ($Matches[1].ToLower() -in 'off','false','no','0','disable') {
+                $script:UseColor = $false; $script:Rst = ''
+            }
+            continue
+        }
         if ($line -match '^\s*//\s*color\s+(\w+)\s*=?\s*(.*)$') {
             $val = $Matches[2].Trim()
             switch ($Matches[1].ToLower()) {
@@ -121,7 +128,7 @@ function Confirm-Data {
     $df = Get-DataFile
     if (-not (Test-Path $df)) {
         New-Item -ItemType Directory -Force -Path (Get-ConfigDir) | Out-Null
-        try { Get-File "$BASE_URL/shortcuts.txt" $df }
+        try { Get-File "$BASE_URL/windows.txt" $df }
         catch { Die "no shortcuts file at $df and default download failed. Run: shortcuts reset" }
     }
 }
@@ -221,7 +228,7 @@ function Invoke-Reset([string[]] $Argv) {
         if ($ans -notmatch '^(y|yes)$') { Die 'cancelled' }
     }
     New-Item -ItemType Directory -Force -Path (Get-ConfigDir) | Out-Null
-    Get-File "$BASE_URL/shortcuts.txt" $df
+    Get-File "$BASE_URL/windows.txt" $df
     Write-Host "Restored defaults to $df"
 }
 
@@ -348,21 +355,20 @@ function Invoke-Uninstall([string[]] $Argv) {
 
 function Show-Help {
     @"
-Usage: shortcuts [search <term>|edit|path|reset [-y]|update|version|help]
+shortcuts v$VERSION — keyboard-shortcut cheat sheet
 
-shortcuts — customizable keyboard-shortcut reference (v$VERSION)
+Usage: shortcuts [command]
+  (none)           Print shortcuts
+  search <term>    Filter by keyword
+  edit             Edit in `$env:EDITOR (else notepad)
+  path             Print data file path
+  reset [-y]       Restore defaults
+  update           Update the script
+  version          Version + environment
+  uninstall [-y]   Remove everything
+  help             This help
 
-  shortcuts                 Print your shortcuts
-  shortcuts search <term>   Filter shortcuts by keyword
-  shortcuts edit            Open your shortcuts in `$env:EDITOR (else notepad)
-  shortcuts path            Print the data file path
-  shortcuts reset [-y]      Restore the default shortcuts
-  shortcuts update          Update the shortcuts script itself
-  shortcuts version         Show version + environment info
-  shortcuts uninstall [-y]  Remove shortcuts completely
-  shortcuts help            Show this help
-
-Data file: $(Get-DataFile)
+Data: $(Get-DataFile)
 "@ | Write-Host
 }
 

@@ -69,7 +69,7 @@ if (Test-Path $DataFile) {
     Info "Keeping existing shortcuts at $DataFile"
 } else {
     Info "Installing default shortcuts -> $DataFile"
-    Get-File "$BASE_URL/shortcuts.txt" $DataFile
+    Get-File "$BASE_URL/windows.txt" $DataFile
 }
 
 # Add ProgDir to the User PATH if absent.

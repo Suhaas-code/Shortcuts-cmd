@@ -1,0 +1,48 @@
+// Comment (never shown). "# Section" = header, "key<TAB>description" = row.
+// `backtick` a key to color it. **bold** *italic* _italic_ = emphasis. "---" = rule.
+// "// ansi = off" disables all color/styling (for SSH/WSL that leak codes).
+// "// color <header|key|desc|code> = <spec>" sets colors (see README).
+// color header = bright-cyan
+// color key    = dim cyan
+// color desc   = default
+// color code   = cyan
+
+# Tabs & Windows
+`Cmd` + `T`	New tab
+`Cmd` + `N`	New window
+`Cmd` + `W`	Close tab
+`Cmd` + `Shift` + `[`/`]`	Previous / Next tab
+`Cmd` + `1`..`9`	Jump to tab N
+`Cmd` + `Ctrl` + `F`	Toggle fullscreen
+
+# Splits (iTerm2)
+`Cmd` + `D`	Split pane vertically
+`Cmd` + `Shift` + `D`	Split pane horizontally
+`Cmd` + `Opt` + `Arrow`	Move between panes
+`Cmd` + `]` / `Cmd` + `[`	Next / Previous pane
+
+# Copy & Paste
+`Cmd` + `C`	Copy
+`Cmd` + `V`	Paste
+`Cmd` + `F`	Find
+`Cmd` + `K`	Clear buffer
+
+# Font Size
+`Cmd` + `+`	Increase font size
+`Cmd` + `-`	Decrease font size
+`Cmd` + `0`	Reset font size
+
+# Line Editing
+`Ctrl` + `A` / `Ctrl` + `E`	Start / End of line
+`Opt` + `B` / `Opt` + `F`	Move back / forward one word
+`Ctrl` + `U`	Cut to start of line
+`Ctrl` + `K`	Cut to end of line
+`Ctrl` + `W`	Cut previous word
+`Ctrl` + `L`	Clear screen
+
+# History & Control
+`Ctrl` + `R`	Reverse search history
+`Up` / `Down`	Previous / Next command
+`Ctrl` + `C`	Interrupt (SIGINT)
+`Ctrl` + `Z`	Suspend (SIGTSTP)
+`Ctrl` + `D`	End of input / logout

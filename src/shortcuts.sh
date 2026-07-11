@@ -3,9 +3,18 @@
 # https://github.com/Suhaas-code/shortcuts-cmd
 set -euo pipefail
 
-VERSION="1.3.0"
+VERSION="1.4.0"
 REPO="Suhaas-code/shortcuts-cmd"
 BASE_URL="https://github.com/${REPO}/releases/latest/download"
+
+# Default data asset for this environment (macOS / Windows-shell / Linux).
+default_asset() {
+  case "$(uname -s 2>/dev/null)" in
+    Darwin)               echo macos.txt ;;
+    MINGW*|MSYS*|CYGWIN*) echo windows.txt ;;
+    *)                    echo linux.txt ;;
+  esac
+}
 
 # --- paths -----------------------------------------------------------------
 config_dir() {
@@ -54,6 +63,13 @@ parse_color_directives() { # file  — read `// color <target> = <spec>` lines
   while IFS= read -r ln; do
     rest="$(ltrim "$ln")"
     case "$rest" in //*) rest="$(ltrim "${rest#//}")" ;; *) continue ;; esac
+    # `// ansi = off` disables all color/styling (avoids ANSI leaking over SSH/WSL).
+    case "$rest" in
+      ansi*)
+        aval="$(printf '%s' "${rest#ansi}" | tr -d '[:space:]=' | tr 'A-Z' 'a-z')"
+        case "$aval" in off|false|no|0|disable) COLOR_ON=0 ;; esac
+        continue ;;
+    esac
     # require the 'color' keyword
     case "$rest" in
       color) continue ;;
@@ -94,7 +110,7 @@ ensure_data() {
   local df; df="$(data_file)"
   if [ ! -f "$df" ]; then
     mkdir -p "$(config_dir)"
-    if ! fetch "${BASE_URL}/shortcuts.txt" "$df" 2>/dev/null; then
+    if ! fetch "${BASE_URL}/$(default_asset)" "$df" 2>/dev/null; then
       die "no shortcuts file at $df and default download failed. Run: shortcuts reset"
     fi
   fi
@@ -252,7 +268,7 @@ cmd_reset() {
     case "$ans" in y|Y|yes|YES) ;; *) die "cancelled" ;; esac
   fi
   mkdir -p "$(config_dir)"
-  fetch "${BASE_URL}/shortcuts.txt" "$df" || die "download failed"
+  fetch "${BASE_URL}/$(default_asset)" "$df" || die "download failed"
   printf 'Restored defaults to %s\n' "$df"
 }
 
@@ -376,21 +392,20 @@ cmd_uninstall() {
 
 cmd_help() {
   cat <<EOF
-Usage: shortcuts [search <term>|edit|path|reset [-y]|update|version|uninstall|help]
+shortcuts v${VERSION} — keyboard-shortcut cheat sheet
 
-shortcuts — customizable keyboard-shortcut reference (v${VERSION})
+Usage: shortcuts [command]
+  (none)           Print shortcuts
+  search <term>    Filter by keyword
+  edit             Edit in \$EDITOR
+  path             Print data file path
+  reset [-y]       Restore defaults
+  update           Update the script
+  version          Version + environment
+  uninstall [-y]   Remove everything
+  help             This help
 
-  shortcuts                 Print your shortcuts
-  shortcuts search <term>   Filter shortcuts by keyword
-  shortcuts edit            Open your shortcuts in \$EDITOR
-  shortcuts path            Print the data file path
-  shortcuts reset [-y]      Restore the default shortcuts
-  shortcuts update          Update the shortcuts script itself
-  shortcuts version         Show version + environment info
-  shortcuts uninstall [-y]  Remove shortcuts completely
-  shortcuts help            Show this help
-
-Data file: $(data_file)
+Data: $(data_file)
 EOF
 }
 

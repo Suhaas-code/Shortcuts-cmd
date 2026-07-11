@@ -12,6 +12,15 @@ DATA_FILE="$CONFIG_DIR/shortcuts.txt"
 info() { printf '\033[1;36m==>\033[0m %s\n' "$1"; }
 die()  { printf '\033[1;31merror:\033[0m %s\n' "$1" >&2; exit 1; }
 
+# Default data asset for this environment (macOS / Windows-shell / Linux).
+default_asset() {
+  case "$(uname -s 2>/dev/null)" in
+    Darwin)               echo macos.txt ;;
+    MINGW*|MSYS*|CYGWIN*) echo windows.txt ;;
+    *)                    echo linux.txt ;;
+  esac
+}
+
 fetch() { # url dest
   if command -v curl >/dev/null 2>&1; then
     curl -fsSL "$1" -o "$2"
@@ -67,7 +76,7 @@ if [ -f "$DATA_FILE" ]; then
   info "Keeping existing shortcuts at $DATA_FILE"
 else
   info "Installing default shortcuts -> $DATA_FILE"
-  fetch "${BASE_URL}/shortcuts.txt" "$DATA_FILE"
+  fetch "${BASE_URL}/$(default_asset)" "$DATA_FILE"
 fi
 
 # Ensure ~/.local/bin is on PATH.

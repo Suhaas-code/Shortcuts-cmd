@@ -83,7 +83,9 @@ curl -fsSL https://github.com/Suhaas-code/shortcuts-cmd/releases/latest/download
 ```
 
 The installer drops the script somewhere on your `PATH` and seeds a default
-shortcut list. Open a **new** terminal afterwards — or the installer prints a
+shortcut list **matched to your environment** — Windows Terminal keys on
+Windows, terminal + readline + tmux keys on Linux, and macOS Terminal / iTerm2
+keys on macOS. Open a **new** terminal afterwards — or the installer prints a
 one-line command to enable it in your **current** shell without restarting.
 
 > Re-running an installer is safe: it upgrades the script but **never overwrites
@@ -146,6 +148,9 @@ key<TAB>description
 - **`**bold**`, `*italic*`, `_italic_`** — inline emphasis inside a key or
   description renders with ANSI styling; the markers themselves never print.
 - **`---`** (a line of only `---`, `***`, or `___`) — a horizontal rule.
+- **`// ansi = off`** — disables **all** color and styling (bold/italic too).
+  Handy when raw escape codes leak through, e.g. some SSH or WSL sessions.
+  Equivalent to `NO_COLOR`, but it travels inside the file.
 - **`// ...`** — a comment. Ignored when printing.
 - Blank lines are ignored.
 
@@ -236,7 +241,10 @@ assets (flattened to plain filenames, independent of this repo's folders).
 install.ps1 / install.sh   one-line installers, run these (irm / curl)
 src/shortcuts.ps1          PowerShell implementation
 src/shortcuts.sh           POSIX shell implementation
-src/shortcuts.txt          the default cheat sheet + color config
+src/shortcuts.txt          generic default (fallback / back-compat)
+src/shortcuts/windows.txt  per-environment default cheat sheets
+src/shortcuts/linux.txt      — the installer seeds the one that
+src/shortcuts/macos.txt      matches your OS
 ```
 
 > Installed filenames differ slightly from source: the POSIX script installs
