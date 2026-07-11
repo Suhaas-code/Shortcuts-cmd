@@ -4,6 +4,11 @@
 // e.g. "`Alt` + `Shift` + `+`" colors Alt, Shift, and + separately from the
 // " + " connecting them.
 //
+// Markdown-lite: "#/##/### Title" for heading levels, a line of "---" (or ***
+// / ___) for a horizontal rule, and **bold** / *italic* / _italic_ inside a
+// key or description. Keep keys wrapped in `backticks` so * and _ used as keys
+// are not treated as emphasis.
+//
 // Colors (edit these). Color names: black red green yellow blue magenta cyan
 // white gray, plus bright-* variants (e.g. bright-cyan). Styles: bold dim
 // italic underline. Combine with spaces. Use "default" for the terminal color.

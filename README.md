@@ -56,6 +56,8 @@ Opening shortcuts in the default editor...
   descriptions, keeping only the sections that match.
 - **Highlights individual keys** — wrap a key in `` `backticks` `` and it renders
   in its own color, e.g. `` `Alt` + `Shift` + `+` ``, distinct from the `+` connectors.
+- **Markdown-lite formatting** — `#`/`##` headings, `**bold**`/`*italic*`, and
+  `---` rules, adapted for the terminal (see [Customizing](#customizing)).
 - **Customizable colors** — set section/key/description/code colors right inside
   the data file with `// color` lines (see [Customizing](#customizing)).
 - **Self-maintaining** — `shortcuts update` pulls the latest script; `shortcuts reset`
@@ -134,14 +136,48 @@ Run `shortcuts edit` and make it yours. The format is plain text:
 key<TAB>description
 ```
 
-- **`# Section`** — a section header.
+- **`# Section`** — a section header. `##` / `###` render as a lighter
+  `--- Section ---` sub-header for a second level of grouping.
 - **`key<TAB>description`** — one shortcut. Separate the two with a **Tab**
   (a run of 2+ spaces also works). Columns are aligned automatically on print.
 - **`` `key` ``** — wrap individual keys in backticks to highlight them in a
   distinct color, separate from connectors like `+` or `/` left outside the
   backticks.
+- **`**bold**`, `*italic*`, `_italic_`** — inline emphasis inside a key or
+  description renders with ANSI styling; the markers themselves never print.
+- **`---`** (a line of only `---`, `***`, or `___`) — a horizontal rule.
 - **`// ...`** — a comment. Ignored when printing.
 - Blank lines are ignored.
+
+### Markdown, adapted for the terminal
+
+The format is a deliberate **subset of Markdown** tuned for a TUI cheat sheet.
+What carries over, what changed, and what is intentionally left out:
+
+| Markdown | In `shortcuts` |
+|---|---|
+| `#` / `##` / `###` headings | Section headers — level 1 → `=== Title ===`, level 2+ → `--- Title ---` |
+| `**bold**` | Bold (ANSI) |
+| `*italic*` / `_italic_` | Italic (ANSI) |
+| `` `code` `` | **Repurposed**: highlights an individual **key**, not literal code |
+| `---` / `***` / `___` | Horizontal rule |
+| `<TAB>` between two cells | **shortcuts-specific**: splits a line into `key → description`, auto-aligned |
+| `// comment` | **shortcuts-specific**: a comment / `// color` directive (not Markdown) |
+
+**Different from standard Markdown, on purpose:**
+
+- Backticks mark a **key**, not inline code — so `` `Ctrl` + `Shift` + `W` ``
+  colors each key and leaves the `+` connectors plain.
+- Emphasis is only detected **outside** backticks. Keep real `*` / `_` / `+`
+  keys wrapped in backticks (`` `*` ``) so they are never mistaken for emphasis.
+- A single unmatched `*` or `_` is left as literal text.
+- Emphasis renders as ANSI styling, so it disappears cleanly when color is off
+  (piped output or `NO_COLOR`) — only the markers are stripped.
+
+**Deferred for the TUI experience** (written as plain text if you use them):
+tables, images, links, multi-line code fences, blockquotes, ordered/nested and
+task lists, and raw HTML. A cheat-sheet row is a `key → description` pair, so
+those block elements have no place to render.
 
 Example:
 

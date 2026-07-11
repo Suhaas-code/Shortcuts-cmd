@@ -7,7 +7,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$VERSION  = '1.2.0'
+$VERSION  = '1.3.0'
 $REPO     = 'Suhaas-code/shortcuts-cmd'
 $BASE_URL = "https://github.com/$REPO/releases/latest/download"
 
@@ -65,15 +65,45 @@ function Format-Colored([string] $code, [string] $text) {
     if ($code) { "$code$text$($script:Rst)" } else { $text }
 }
 
-# Splits text on `backticks`; even-index segments use $baseColor, odd-index (inside
-# backticks) use $codeColor. Backticks themselves are stripped from the output.
+# Converts one Markdown emphasis marker (e.g. `**`) into ANSI on/off codes.
+# Codes accumulate over the surrounding color, so <off> (22/23) restores it
+# without dropping the base color. Markers are always stripped, even with color off.
+function Convert-Emphasis([string] $s, [string] $marker, [int] $on, [int] $off) {
+    $out = ''
+    $mlen = $marker.Length
+    while (($p = $s.IndexOf($marker)) -ge 0) {
+        $out += $s.Substring(0, $p)
+        $s = $s.Substring($p + $mlen)
+        $q = $s.IndexOf($marker)
+        if ($q -lt 0) { return $out + $marker + $s }   # unmatched — keep literal
+        $inner = $s.Substring(0, $q)
+        $s = $s.Substring($q + $mlen)
+        if ($inner -eq '') { $out += ($marker + $marker); continue }
+        if ($script:UseColor) { $out += "$e[${on}m$inner$e[${off}m" } else { $out += $inner }
+    }
+    $out + $s
+}
+
+# Renders inline Markdown emphasis: **bold**, *italic*, _italic_ (bold first so
+# ** is consumed before single *). Applied only to text outside `backticks`.
+function Expand-Inline([string] $s) {
+    if (-not $s) { return $s }
+    $s = Convert-Emphasis $s '**' 1 22
+    $s = Convert-Emphasis $s '*'  3 23
+    $s = Convert-Emphasis $s '_'  3 23
+    $s
+}
+
+# Splits text on `backticks`; even-index segments use $baseColor (with inline
+# emphasis expanded), odd-index (inside backticks) use $codeColor verbatim.
+# Backticks themselves are stripped from the output.
 function Format-Field([string] $text, [string] $baseColor, [string] $codeColor) {
     $parts = $text -split '`'
     $sb = New-Object System.Text.StringBuilder
     for ($i = 0; $i -lt $parts.Count; $i++) {
         if ($parts[$i] -eq '') { continue }
-        $c = if ($i % 2 -eq 0) { $baseColor } else { $codeColor }
-        [void]$sb.Append((Format-Colored $c $parts[$i]))
+        if ($i % 2 -eq 0) { [void]$sb.Append((Format-Colored $baseColor (Expand-Inline $parts[$i]))) }
+        else              { [void]$sb.Append((Format-Colored $codeColor $parts[$i])) }
     }
     $sb.ToString()
 }
@@ -98,6 +128,8 @@ function Confirm-Data {
 
 # --- rendering -------------------------------------------------------------
 # Parses the data file into sections and prints aligned/colored output.
+# Markdown-lite supported: #/##/### headings, --- horizontal rule, **bold**,
+# *italic* / _italic_. // comment lines and `key`<TAB>desc rows are unchanged.
 function Show-Shortcuts([string] $Filter) {
     $lines = Get-Content -LiteralPath (Get-DataFile)
     Read-ColorDirectives $lines
@@ -105,16 +137,28 @@ function Show-Shortcuts([string] $Filter) {
     $cKey = ConvertTo-Ansi $script:SpecKey
     $cDesc = ConvertTo-Ansi $script:SpecDesc
     $cCode = ConvertTo-Ansi $script:SpecCode
+    $cRule = if ($script:UseColor) { "$e[2m" } else { '' }
     $sections = New-Object System.Collections.ArrayList
     $cur = $null
     $maxk = 0
 
+    function New-Section($name, $level) {
+        $s = [ordered]@{ Name = $name; Level = $level; Rows = (New-Object System.Collections.ArrayList) }
+        [void]$sections.Add($s)
+        $s
+    }
+
     foreach ($line in $lines) {
         if ($line -match '^\s*$') { continue }
-        if ($line -match '^\s*//') { continue }
-        if ($line -match '^#') {
-            $cur = [ordered]@{ Name = ($line.Substring(1)).Trim(); Rows = (New-Object System.Collections.ArrayList) }
-            [void]$sections.Add($cur)
+        if ($line -match '^\s*//') { continue }                    # comment / color directive
+        if ($line -match '^\s*(-{3,}|\*{3,}|_{3,})\s*$') {         # horizontal rule
+            if ($null -eq $cur) { $cur = New-Section 'General' 1 }
+            [void]$cur.Rows.Add(@{ Type = 'rule' })
+            continue
+        }
+        if ($line -match '^\s*#') {                                # heading (any level)
+            $m = [regex]::Match($line, '^\s*(#+)\s*(.*?)\s*#*\s*$')
+            $cur = New-Section ($m.Groups[2].Value.Trim()) ($m.Groups[1].Value.Length)
             continue
         }
         $k = ''; $d = ''
@@ -126,11 +170,8 @@ function Show-Shortcuts([string] $Filter) {
             $k = $line.Substring(0, $idx); $d = $line.Substring($idx + $Matches[0].Length)
         } else { $k = $line; $d = '' }
         $k = $k.Trim(); $d = $d.Trim()
-        if ($null -eq $cur) {
-            $cur = [ordered]@{ Name = 'General'; Rows = (New-Object System.Collections.ArrayList) }
-            [void]$sections.Add($cur)
-        }
-        [void]$cur.Rows.Add(@{ Key = $k; Desc = $d })
+        if ($null -eq $cur) { $cur = New-Section 'General' 1 }
+        [void]$cur.Rows.Add(@{ Type = 'row'; Key = $k; Desc = $d })
         $kVisLen = ($k -replace '`', '').Length
         if ($kVisLen -gt $maxk) { $maxk = $kVisLen }
     }
@@ -141,14 +182,17 @@ function Show-Shortcuts([string] $Filter) {
         $rows = $s.Rows
         if ($Filter) {
             $f = $Filter.ToLower()
-            $rows = @($s.Rows | Where-Object { $_.Key.ToLower().Contains($f) -or $_.Desc.ToLower().Contains($f) })
+            $rows = @($s.Rows | Where-Object { $_.Type -eq 'row' -and ($_.Key.ToLower().Contains($f) -or $_.Desc.ToLower().Contains($f)) })
         }
         if ($rows.Count -eq 0) { continue }
         if (-not $first) { Write-Host '' }
         $first = $false
-        Write-Host (Format-Colored $cHdr "=== $($s.Name) ===")
+        $deco = if ($s.Level -ge 2) { '---' } else { '===' }
+        Write-Host (Format-Colored $cHdr "$deco $(Expand-Inline $s.Name) $deco")
         foreach ($r in $rows) {
-            if ($r.Desc -eq '') {
+            if ($r.Type -eq 'rule') {
+                Write-Host (Format-Colored $cRule ('-' * 32))
+            } elseif ($r.Desc -eq '') {
                 Write-Host (Format-Field $r.Key $cKey $cCode)
             } else {
                 $kVisLen = ($r.Key -replace '`', '').Length
@@ -197,6 +241,7 @@ function Show-Version {
         Read-ColorDirectives $lines
         foreach ($ln in $lines) {
             if ($ln -match '^\s*$' -or $ln -match '^\s*//') { continue }
+            if ($ln -match '^\s*(-{3,}|\*{3,}|_{3,})\s*$') { continue }   # horizontal rule
             if ($ln -match '^\s*#') { $nsec++ } else { $nrow++ }
         }
     }

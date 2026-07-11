@@ -3,7 +3,7 @@
 # https://github.com/Suhaas-code/shortcuts-cmd
 set -euo pipefail
 
-VERSION="1.2.0"
+VERSION="1.3.0"
 REPO="Suhaas-code/shortcuts-cmd"
 BASE_URL="https://github.com/${REPO}/releases/latest/download"
 
@@ -109,23 +109,47 @@ render() {
   desc="$(ansi_seq "$SPEC_DESC")"
   code="$(ansi_seq "$SPEC_CODE")"
   [ "$COLOR_ON" = 1 ] && rst=$'\033[0m' || rst=""
-  awk -v HDR="$hdr" -v KEY="$key" -v DESC="$desc" -v CODE="$code" -v RST="$rst" -v filter="$filter" '
+  awk -v HDR="$hdr" -v KEY="$key" -v DESC="$desc" -v CODE="$code" -v RST="$rst" -v filter="$filter" -v CO="$COLOR_ON" '
     function trim(s){ sub(/^[ \t]+/,"",s); sub(/[ \t]+$/,"",s); return s }
     function wrap(c,s){ return (c=="" || s=="") ? s : c s RST }
-    # colorize a field: text outside `backticks` gets basec, text inside gets CODE
+    # wrap a Markdown emphasis span in ANSI on/off codes (accumulate over base color)
+    function wstyle(txt,on,off){ return (CO!=1||txt=="") ? txt : "\033[" on "m" txt "\033[" off "m" }
+    # convert one emphasis marker (** or * or _); markers always stripped
+    function empass(s,marker,mlen,on,off,   out,p,q,inner){
+      out=""
+      while((p=index(s,marker))>0){
+        out=out substr(s,1,p-1); s=substr(s,p+mlen)
+        q=index(s,marker)
+        if(q==0){ return out marker s }          # unmatched — keep literal
+        inner=substr(s,1,q-1); s=substr(s,q+mlen)
+        if(inner==""){ out=out marker marker; continue }
+        out=out wstyle(inner,on,off)
+      }
+      return out s
+    }
+    # inline Markdown: **bold** (first), *italic*, _italic_
+    function inl(s){ s=empass(s,"**",2,1,22); s=empass(s,"*",1,3,23); s=empass(s,"_",1,3,23); return s }
+    # colorize a field: text outside `backticks` gets basec (+inline emphasis), inside gets CODE
     function colorize(s, basec,   n,arr,i,out){
       n=split(s,arr,"`")
       out=""
-      for(i=1;i<=n;i++) out = out wrap((i%2==1)?basec:CODE, arr[i])
+      for(i=1;i<=n;i++) out = out ((i%2==1) ? wrap(basec, inl(arr[i])) : wrap(CODE, arr[i]))
       return out
     }
     {
       line=$0
       if (line ~ /^[[:space:]]*$/) next
       if (line ~ /^[[:space:]]*\/\//) next     # comment / directive line
-      if (line ~ /^#/) {                       # section header
-        sec=trim(substr(line,2))
-        n_sec++; sec_name[n_sec]=sec; sec_rows[n_sec]=0
+      if (line ~ /^[[:space:]]*(-{3,}|\*{3,}|_{3,})[[:space:]]*$/) {   # horizontal rule
+        if (n_sec==0){ n_sec=1; sec_name[1]="General"; sec_lvl[1]=1; sec_rows[1]=0 }
+        r=++sec_rows[n_sec]; rtype[n_sec,r]="rule"
+        next
+      }
+      if (line ~ /^[[:space:]]*#/) {            # heading (any level)
+        h=line; sub(/^[[:space:]]*/,"",h)
+        lvl=0; while(substr(h,1,1)=="#"){ lvl++; h=substr(h,2) }
+        sub(/[[:space:]]*#*[[:space:]]*$/,"",h)
+        n_sec++; sec_name[n_sec]=trim(h); sec_lvl[n_sec]=lvl; sec_rows[n_sec]=0
         next
       }
       # row: split on first TAB, else on 2+ spaces
@@ -136,19 +160,21 @@ render() {
         k=substr(line,1,RSTART-1); d=substr(line,RSTART+RLENGTH)
       } else { k=line; d="" }
       k=trim(k); d=trim(d)
-      if (n_sec==0){ n_sec=1; sec_name[1]="General"; sec_rows[1]=0 }
+      if (n_sec==0){ n_sec=1; sec_name[1]="General"; sec_lvl[1]=1; sec_rows[1]=0 }
       r=++sec_rows[n_sec]
-      rk[n_sec,r]=k; rd[n_sec,r]=d
+      rtype[n_sec,r]="row"; rk[n_sec,r]=k; rd[n_sec,r]=d
       kv=k; gsub(/`/,"",kv)                    # visible width ignores backticks
       if (length(kv)>maxk) maxk=length(kv)
     }
     END{
       pad=maxk+2
+      rulecol=(CO==1)?"\033[2m":""
       first=1
       for(i=1;i<=n_sec;i++){
-        # apply filter: collect matching rows
+        # apply filter: collect matching rows (rules dropped while filtering)
         cnt=0
         for(j=1;j<=sec_rows[i];j++){
+          if(rtype[i,j]=="rule"){ if(filter!="") continue; mrows[++cnt]=j; continue }
           kk=rk[i,j]; dd=rd[i,j]
           if(filter!=""){
             lk=tolower(kk); ld=tolower(dd); lf=tolower(filter)
@@ -159,9 +185,12 @@ render() {
         if(cnt==0) continue
         if(!first) print ""
         first=0
-        print wrap(HDR, "=== " sec_name[i] " ===")
+        deco=(sec_lvl[i]>=2)?"---":"==="
+        print wrap(HDR, deco " " inl(sec_name[i]) " " deco)
         for(m=1;m<=cnt;m++){
-          j=mrows[m]; kk=rk[i,j]; dd=rd[i,j]
+          j=mrows[m]
+          if(rtype[i,j]=="rule"){ print wrap(rulecol, "--------------------------------"); continue }
+          kk=rk[i,j]; dd=rd[i,j]
           kv=kk; gsub(/`/,"",kv)
           if(dd==""){ print colorize(kk, KEY) }
           else {
@@ -244,7 +273,7 @@ cmd_version() {
   [ "$COLOR_ON" = 1 ] && rst=$'\033[0m' || rst=""
   if [ -f "$df" ]; then
     parse_color_directives "$df"
-    counts="$(awk '/^[[:space:]]*$/{next}/^[[:space:]]*\/\//{next}/^[[:space:]]*#/{s++;next}{r++}END{print (s+0)"|"(r+0)}' "$df")"
+    counts="$(awk '/^[[:space:]]*$/{next}/^[[:space:]]*\/\//{next}/^[[:space:]]*(-{3,}|\*{3,}|_{3,})[[:space:]]*$/{next}/^[[:space:]]*#/{s++;next}{r++}END{print (s+0)"|"(r+0)}' "$df")"
     nsec="${counts%%|*}"; nrow="${counts##*|}"
   fi
   hdr="$(ansi_seq "$SPEC_HDR")"
