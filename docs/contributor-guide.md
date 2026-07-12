@@ -78,7 +78,8 @@ Distribution is GitHub Releases with **flattened** asset names (see
 [architecture.md](architecture.md#distribution)). To cut a release:
 
 ```bash
-# 1. commit the version bump + changes, push to main
+# 1. update CHANGELOG.md (move Unreleased → the new version), commit the
+#    version bump + changes, push to main
 git commit -am "feat: … (vX.Y.Z)"
 git push origin main
 
@@ -102,4 +103,5 @@ so a new release reaches everyone as soon as it is published.
 - [ ] `// comment` lines still never render.
 - [ ] Color-off output is clean plain text.
 - [ ] `VERSION` bumped in both scripts (if user-visible behavior changed).
+- [ ] `CHANGELOG.md` updated (if user-visible behavior changed).
 - [ ] Docs updated if the format, commands, or install flow changed.

@@ -11,6 +11,15 @@ key<TAB>description
 
 For colors, see [colors.md](colors.md).
 
+## Auto-adding tool shortcuts
+
+`shortcuts autoadd` scans your `PATH` for popular CLI tools (Claude Code, Codex,
+opencode, Aider, Gemini, Vim, Neovim, git, tmux, fzf, Docker, kubectl) and
+appends a small starter section for each one it finds. It previews what it will
+add, asks before writing (`-y` skips the prompt), and skips any section whose
+heading you already have. The added rows are ordinary lines you can then
+`shortcuts edit` and tailor.
+
 ## Format
 
 - **`# Section`** — a section header. `##` / `###` render as a lighter

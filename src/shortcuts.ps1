@@ -7,7 +7,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$VERSION  = '1.4.0'
+$VERSION  = '1.5.0'
 $REPO     = 'Suhaas-code/shortcuts-cmd'
 $BASE_URL = "https://github.com/$REPO/releases/latest/download"
 
@@ -189,7 +189,13 @@ function Show-Shortcuts([string] $Filter) {
         $rows = $s.Rows
         if ($Filter) {
             $f = $Filter.ToLower()
-            $rows = @($s.Rows | Where-Object { $_.Type -eq 'row' -and ($_.Key.ToLower().Contains($f) -or $_.Desc.ToLower().Contains($f)) })
+            # A term matching the section heading returns every row in that section;
+            # otherwise fall back to matching the row's key/description.
+            if ($s.Name.ToLower().Contains($f)) {
+                $rows = @($s.Rows | Where-Object { $_.Type -eq 'row' })
+            } else {
+                $rows = @($s.Rows | Where-Object { $_.Type -eq 'row' -and ($_.Key.ToLower().Contains($f) -or $_.Desc.ToLower().Contains($f)) })
+            }
         }
         if ($rows.Count -eq 0) { continue }
         if (-not $first) { Write-Host '' }
@@ -353,13 +359,165 @@ function Invoke-Uninstall([string[]] $Argv) {
     Write-Host 'shortcuts uninstalled. Open a new terminal to drop the PATH change.'
 }
 
+# --- autoadd ---------------------------------------------------------------
+# Starter shortcut sets for popular CLI tools, keyed by the executable name we
+# probe with Get-Command. Intentionally small — edit them after adding. The
+# section text produced here is kept byte-identical with shortcuts.sh.
+$script:ToolLibrary = @(
+    @{ Exe = 'claude'; Name = 'Claude Code'; Rows = @(
+        @('`/help`',       'Show slash commands'),
+        @('`/clear`',      'Clear conversation history'),
+        @('`/model`',      'Switch the active model'),
+        @('`Esc`',         'Interrupt Claude'),
+        @('`Ctrl` + `C`',  'Quit')
+    )},
+    @{ Exe = 'codex'; Name = 'Codex'; Rows = @(
+        @('`/help`',       'Show commands'),
+        @('`/model`',      'Change the model'),
+        @('`/clear`',      'Clear the conversation'),
+        @('`Esc`',         'Interrupt'),
+        @('`Ctrl` + `C`',  'Quit')
+    )},
+    @{ Exe = 'opencode'; Name = 'opencode'; Rows = @(
+        @('`/help`',       'Show help'),
+        @('`/models`',     'Switch model'),
+        @('`/clear`',      'Clear the session'),
+        @('`/init`',       'Initialize the project'),
+        @('`Ctrl` + `C`',  'Quit')
+    )},
+    @{ Exe = 'aider'; Name = 'Aider'; Rows = @(
+        @('`/add`',        'Add files to the chat'),
+        @('`/drop`',       'Remove files from the chat'),
+        @('`/undo`',       'Undo the last commit'),
+        @('`/diff`',       'Show pending changes'),
+        @('`/run`',        'Run a shell command'),
+        @('`Ctrl` + `C`',  'Cancel or quit')
+    )},
+    @{ Exe = 'gemini'; Name = 'Gemini'; Rows = @(
+        @('`/help`',       'Show help'),
+        @('`/clear`',      'Clear the screen'),
+        @('`/chat`',       'Manage chat history'),
+        @('`/tools`',      'List available tools'),
+        @('`Ctrl` + `C`',  'Quit')
+    )},
+    @{ Exe = 'vim'; Name = 'Vim'; Rows = @(
+        @('`i`',    'Insert mode'),
+        @('`Esc`',  'Normal mode'),
+        @('`:w`',   'Save'),
+        @('`:q`',   'Quit'),
+        @('`:wq`',  'Save and quit'),
+        @('`dd`',   'Delete the current line'),
+        @('`/`',    'Search forward')
+    )},
+    @{ Exe = 'nvim'; Name = 'Neovim'; Rows = @(
+        @('`i`',    'Insert mode'),
+        @('`Esc`',  'Normal mode'),
+        @('`:w`',   'Save'),
+        @('`:q`',   'Quit'),
+        @('`:wq`',  'Save and quit'),
+        @('`gg`',   'Go to the top'),
+        @('`G`',    'Go to the bottom')
+    )},
+    @{ Exe = 'git'; Name = 'Git'; Rows = @(
+        @('`git status`',  'Show working tree status'),
+        @('`git add`',     'Stage changes'),
+        @('`git commit`',  'Record staged changes'),
+        @('`git push`',    'Upload commits'),
+        @('`git pull`',    'Fetch and merge'),
+        @('`git log`',     'Show commit history')
+    )},
+    @{ Exe = 'tmux'; Name = 'tmux'; Rows = @(
+        @('`Ctrl` + `b` `c`',  'New window'),
+        @('`Ctrl` + `b` `n`',  'Next window'),
+        @('`Ctrl` + `b` `%`',  'Split vertically'),
+        @('`Ctrl` + `b` `"`',  'Split horizontally'),
+        @('`Ctrl` + `b` `d`',  'Detach session'),
+        @('`Ctrl` + `b` `x`',  'Kill the pane')
+    )},
+    @{ Exe = 'fzf'; Name = 'fzf'; Rows = @(
+        @('`Ctrl` + `R`',  'Search command history'),
+        @('`Ctrl` + `T`',  'Paste selected files'),
+        @('`Alt` + `C`',   'cd into selected directory'),
+        @('`Tab`',         'Toggle multi-select'),
+        @('`Enter`',       'Confirm selection')
+    )},
+    @{ Exe = 'docker'; Name = 'Docker'; Rows = @(
+        @('`docker ps`',      'List running containers'),
+        @('`docker images`',  'List images'),
+        @('`docker build`',   'Build an image'),
+        @('`docker run`',     'Run a container'),
+        @('`docker exec`',    'Run a command in a container'),
+        @('`docker logs`',    'Show container logs')
+    )},
+    @{ Exe = 'kubectl'; Name = 'kubectl'; Rows = @(
+        @('`kubectl get`',       'List resources'),
+        @('`kubectl describe`',  'Show resource details'),
+        @('`kubectl logs`',      'Print pod logs'),
+        @('`kubectl apply`',     'Apply a manifest'),
+        @('`kubectl exec`',      'Run a command in a pod'),
+        @('`kubectl delete`',    'Delete resources')
+    )}
+)
+
+function Test-HasCommand([string] $name) {
+    [bool](Get-Command $name -ErrorAction SilentlyContinue)
+}
+
+# Detects installed CLI tools and appends a starter shortcut section for each,
+# skipping any tool whose section heading is already in the data file.
+function Invoke-AutoAdd([string[]] $Argv) {
+    Confirm-Data
+    $df = Get-DataFile
+    $yes = ($Argv -contains '-y') -or ($Argv -contains '--yes')
+
+    $existing = @{}
+    foreach ($line in (Get-Content -LiteralPath $df)) {
+        if ($line -match '^\s*#+\s*(.*?)\s*#*\s*$') { $existing[$Matches[1].Trim().ToLower()] = $true }
+    }
+
+    $toAdd = @(); $present = @()
+    foreach ($t in $script:ToolLibrary) {
+        if (-not (Test-HasCommand $t.Exe)) { continue }
+        if ($existing.ContainsKey($t.Name.ToLower())) { $present += $t.Name; continue }
+        $toAdd += $t
+    }
+
+    Write-Host 'autoadd — shortcuts for detected CLI tools'
+    Write-Host ''
+    if ($toAdd.Count) {
+        Write-Host 'Will add sections:'
+        foreach ($t in $toAdd) { Write-Host "  + $($t.Name)  ($($t.Exe))" }
+    }
+    if ($present.Count) {
+        if ($toAdd.Count) { Write-Host '' }
+        Write-Host "Already present (skipped): $($present -join ', ')"
+    }
+    if ($toAdd.Count -eq 0) {
+        Write-Host ''
+        Write-Host 'Nothing to add — no new detected tools.'
+        return
+    }
+    Write-Host ''
+    if (-not $yes) {
+        $ans = Read-Host "Append $($toAdd.Count) section(s) to $df? [y/N]"
+        if ($ans -notmatch '^(y|yes)$') { Die 'cancelled' }
+    }
+    foreach ($t in $toAdd) {
+        $block = @('', "# $($t.Name)") + @($t.Rows | ForEach-Object { $_[0] + "`t" + $_[1] })
+        Add-Content -LiteralPath $df -Value $block
+    }
+    Write-Host ''
+    Write-Host "Added $($toAdd.Count) section(s) to $df"
+}
+
 function Show-Help {
     @"
 shortcuts v$VERSION — keyboard-shortcut cheat sheet
 
 Usage: shortcuts [command]
   (none)           Print shortcuts
-  search <term>    Filter by keyword
+  search <term>    Filter by keyword or section heading
+  autoadd [-y]     Add shortcuts for detected CLI tools
   edit             Edit in `$env:EDITOR (else notepad)
   path             Print data file path
   reset [-y]       Restore defaults
@@ -380,6 +538,7 @@ switch ($Command.ToLower()) {
         if (-not $Rest -or -not $Rest[0]) { Die 'usage: shortcuts search <term>' }
         Confirm-Data; Show-Shortcuts $Rest[0]
     }
+    'autoadd'   { Invoke-AutoAdd $Rest }
     { $_ -in 'path','where' } { Write-Host (Get-DataFile) }
     'reset'     { Invoke-Reset $Rest }
     { $_ -in 'update','upgrade' } { Invoke-Update }

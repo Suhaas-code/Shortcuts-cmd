@@ -85,7 +85,8 @@ Opening shortcuts in the default editor...
 | Command | What it does |
 |---|---|
 | `shortcuts` | Print your shortcuts |
-| `shortcuts search <term>` | Filter shortcuts by keyword |
+| `shortcuts search <term>` | Filter by keyword — or by section heading to show the whole section |
+| `shortcuts autoadd [-y]` | Detect installed CLI tools and add a starter shortcut section for each |
 | `shortcuts edit` | Open your shortcuts in your editor |
 | `shortcuts path` | Print the data file path |
 | `shortcuts reset [-y]` | Restore the default shortcuts |
@@ -120,6 +121,7 @@ Colors: **[docs/colors.md](docs/colors.md)**
 - **[Colors](docs/colors.md)** — theming and turning color off
 - **[Architecture](docs/architecture.md)** — how it works, repo layout, releases
 - **[Contributor guide](docs/contributor-guide.md)** — developing and releasing
+- **[Changelog](CHANGELOG.md)** — release history
 
 ## License
 

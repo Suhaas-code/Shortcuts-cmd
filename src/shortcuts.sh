@@ -3,7 +3,7 @@
 # https://github.com/Suhaas-code/shortcuts-cmd
 set -euo pipefail
 
-VERSION="1.4.0"
+VERSION="1.5.0"
 REPO="Suhaas-code/shortcuts-cmd"
 BASE_URL="https://github.com/${REPO}/releases/latest/download"
 
@@ -187,12 +187,14 @@ render() {
       rulecol=(CO==1)?"\033[2m":""
       first=1
       for(i=1;i<=n_sec;i++){
-        # apply filter: collect matching rows (rules dropped while filtering)
+        # apply filter: collect matching rows (rules dropped while filtering).
+        # A term matching the section heading keeps every row in the section.
+        secmatch=(filter!="" && index(tolower(sec_name[i]),tolower(filter))>0)
         cnt=0
         for(j=1;j<=sec_rows[i];j++){
           if(rtype[i,j]=="rule"){ if(filter!="") continue; mrows[++cnt]=j; continue }
           kk=rk[i,j]; dd=rd[i,j]
-          if(filter!=""){
+          if(filter!="" && !secmatch){
             lk=tolower(kk); ld=tolower(dd); lf=tolower(filter)
             if(index(lk,lf)==0 && index(ld,lf)==0) continue
           }
@@ -390,13 +392,178 @@ cmd_uninstall() {
   printf '\nshortcuts uninstalled. Open a new shell to drop the PATH change.\n'
 }
 
+# --- autoadd ---------------------------------------------------------------
+# Starter shortcut sets for popular CLI tools, probed by executable name with
+# have(). Intentionally small — edit them after adding. The section text
+# produced here is kept byte-identical with shortcuts.ps1.
+AUTOADD_TOOLS="claude codex opencode aider gemini vim nvim git tmux fzf docker kubectl"
+
+tool_name() { # exe -> section heading
+  case "$1" in
+    claude)   printf 'Claude Code' ;;
+    codex)    printf 'Codex' ;;
+    opencode) printf 'opencode' ;;
+    aider)    printf 'Aider' ;;
+    gemini)   printf 'Gemini' ;;
+    vim)      printf 'Vim' ;;
+    nvim)     printf 'Neovim' ;;
+    git)      printf 'Git' ;;
+    tmux)     printf 'tmux' ;;
+    fzf)      printf 'fzf' ;;
+    docker)   printf 'Docker' ;;
+    kubectl)  printf 'kubectl' ;;
+  esac
+}
+
+aa_row() { printf '%s\t%s\n' "$1" "$2"; }
+
+tool_block() { # exe -> section text (heading + `key`<TAB>desc rows)
+  printf '# %s\n' "$(tool_name "$1")"
+  case "$1" in
+    claude)
+      aa_row '`/help`'       'Show slash commands'
+      aa_row '`/clear`'      'Clear conversation history'
+      aa_row '`/model`'      'Switch the active model'
+      aa_row '`Esc`'         'Interrupt Claude'
+      aa_row '`Ctrl` + `C`'  'Quit' ;;
+    codex)
+      aa_row '`/help`'       'Show commands'
+      aa_row '`/model`'      'Change the model'
+      aa_row '`/clear`'      'Clear the conversation'
+      aa_row '`Esc`'         'Interrupt'
+      aa_row '`Ctrl` + `C`'  'Quit' ;;
+    opencode)
+      aa_row '`/help`'       'Show help'
+      aa_row '`/models`'     'Switch model'
+      aa_row '`/clear`'      'Clear the session'
+      aa_row '`/init`'       'Initialize the project'
+      aa_row '`Ctrl` + `C`'  'Quit' ;;
+    aider)
+      aa_row '`/add`'        'Add files to the chat'
+      aa_row '`/drop`'       'Remove files from the chat'
+      aa_row '`/undo`'       'Undo the last commit'
+      aa_row '`/diff`'       'Show pending changes'
+      aa_row '`/run`'        'Run a shell command'
+      aa_row '`Ctrl` + `C`'  'Cancel or quit' ;;
+    gemini)
+      aa_row '`/help`'       'Show help'
+      aa_row '`/clear`'      'Clear the screen'
+      aa_row '`/chat`'       'Manage chat history'
+      aa_row '`/tools`'      'List available tools'
+      aa_row '`Ctrl` + `C`'  'Quit' ;;
+    vim)
+      aa_row '`i`'    'Insert mode'
+      aa_row '`Esc`'  'Normal mode'
+      aa_row '`:w`'   'Save'
+      aa_row '`:q`'   'Quit'
+      aa_row '`:wq`'  'Save and quit'
+      aa_row '`dd`'   'Delete the current line'
+      aa_row '`/`'    'Search forward' ;;
+    nvim)
+      aa_row '`i`'    'Insert mode'
+      aa_row '`Esc`'  'Normal mode'
+      aa_row '`:w`'   'Save'
+      aa_row '`:q`'   'Quit'
+      aa_row '`:wq`'  'Save and quit'
+      aa_row '`gg`'   'Go to the top'
+      aa_row '`G`'    'Go to the bottom' ;;
+    git)
+      aa_row '`git status`'  'Show working tree status'
+      aa_row '`git add`'     'Stage changes'
+      aa_row '`git commit`'  'Record staged changes'
+      aa_row '`git push`'    'Upload commits'
+      aa_row '`git pull`'    'Fetch and merge'
+      aa_row '`git log`'     'Show commit history' ;;
+    tmux)
+      aa_row '`Ctrl` + `b` `c`'  'New window'
+      aa_row '`Ctrl` + `b` `n`'  'Next window'
+      aa_row '`Ctrl` + `b` `%`'  'Split vertically'
+      aa_row '`Ctrl` + `b` `"`'  'Split horizontally'
+      aa_row '`Ctrl` + `b` `d`'  'Detach session'
+      aa_row '`Ctrl` + `b` `x`'  'Kill the pane' ;;
+    fzf)
+      aa_row '`Ctrl` + `R`'  'Search command history'
+      aa_row '`Ctrl` + `T`'  'Paste selected files'
+      aa_row '`Alt` + `C`'   'cd into selected directory'
+      aa_row '`Tab`'         'Toggle multi-select'
+      aa_row '`Enter`'       'Confirm selection' ;;
+    docker)
+      aa_row '`docker ps`'      'List running containers'
+      aa_row '`docker images`'  'List images'
+      aa_row '`docker build`'   'Build an image'
+      aa_row '`docker run`'     'Run a container'
+      aa_row '`docker exec`'    'Run a command in a container'
+      aa_row '`docker logs`'    'Show container logs' ;;
+    kubectl)
+      aa_row '`kubectl get`'       'List resources'
+      aa_row '`kubectl describe`'  'Show resource details'
+      aa_row '`kubectl logs`'      'Print pod logs'
+      aa_row '`kubectl apply`'     'Apply a manifest'
+      aa_row '`kubectl exec`'      'Run a command in a pod'
+      aa_row '`kubectl delete`'    'Delete resources' ;;
+  esac
+}
+
+# Detects installed CLI tools and appends a starter shortcut section for each,
+# skipping any tool whose section heading is already in the data file.
+cmd_autoadd() {
+  ensure_data
+  local df yes="" t name lname ans sep existing
+  local toadd=() present=()
+  df="$(data_file)"
+  case "${1:-}" in -y|--yes) yes=1 ;; esac
+
+  # existing heading names, lowercased (mirrors the heading parse in render)
+  existing="$(awk 'match($0,/^[[:space:]]*#+[[:space:]]*/){h=substr($0,RLENGTH+1); sub(/[[:space:]]*#*[[:space:]]*$/,"",h); print tolower(h)}' "$df")"
+
+  for t in $AUTOADD_TOOLS; do
+    have "$t" || continue
+    name="$(tool_name "$t")"
+    lname="$(printf '%s' "$name" | tr 'A-Z' 'a-z')"
+    if printf '%s\n' "$existing" | grep -qxF "$lname"; then
+      present+=("$name")
+    else
+      toadd+=("$t")
+    fi
+  done
+
+  printf 'autoadd — shortcuts for detected CLI tools\n\n'
+  if [ "${#toadd[@]}" -gt 0 ]; then
+    printf 'Will add sections:\n'
+    for t in "${toadd[@]}"; do printf '  + %s  (%s)\n' "$(tool_name "$t")" "$t"; done
+  fi
+  if [ "${#present[@]}" -gt 0 ]; then
+    [ "${#toadd[@]}" -gt 0 ] && printf '\n'
+    printf 'Already present (skipped): '
+    sep=""
+    for name in "${present[@]}"; do printf '%s%s' "$sep" "$name"; sep=", "; done
+    printf '\n'
+  fi
+  if [ "${#toadd[@]}" -eq 0 ]; then
+    printf '\nNothing to add — no new detected tools.\n'
+    return 0
+  fi
+  printf '\n'
+  if [ -z "$yes" ]; then
+    printf 'Append %s section(s) to %s? [y/N] ' "${#toadd[@]}" "$df"
+    read -r ans
+    case "$ans" in y|Y|yes|YES) ;; *) die "cancelled" ;; esac
+  fi
+  for t in "${toadd[@]}"; do
+    printf '\n' >> "$df"
+    tool_block "$t" >> "$df"
+  done
+  printf '\nAdded %s section(s) to %s\n' "${#toadd[@]}" "$df"
+}
+
 cmd_help() {
   cat <<EOF
 shortcuts v${VERSION} — keyboard-shortcut cheat sheet
 
 Usage: shortcuts [command]
   (none)           Print shortcuts
-  search <term>    Filter by keyword
+  search <term>    Filter by keyword or section heading
+  autoadd [-y]     Add shortcuts for detected CLI tools
   edit             Edit in \$EDITOR
   path             Print data file path
   reset [-y]       Restore defaults
@@ -414,6 +581,7 @@ main() {
     ""|list)            cmd_list ;;
     edit)               cmd_edit ;;
     search|find)        shift; cmd_search "${1:-}" ;;
+    autoadd)            shift; cmd_autoadd "${1:-}" ;;
     path|where)         cmd_path ;;
     reset)              shift; cmd_reset "${1:-}" ;;
     update|upgrade)     cmd_update ;;
