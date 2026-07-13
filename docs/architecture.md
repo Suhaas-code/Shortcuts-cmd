@@ -3,8 +3,8 @@
 `shortcuts` is two dependency-free scripts that implement the **exact same
 commands and the exact same rendering algorithm**:
 
-- [`src/shortcuts.ps1`](../src/shortcuts.ps1) — PowerShell (Windows).
-- [`src/shortcuts.sh`](../src/shortcuts.sh) — POSIX shell (Linux, macOS, WSL,
+- [`src/shortcuts.ps1`](https://github.com/Suhaas-code/shortcuts-cmd/blob/main/src/shortcuts.ps1) — PowerShell (Windows).
+- [`src/shortcuts.sh`](https://github.com/Suhaas-code/shortcuts-cmd/blob/main/src/shortcuts.sh) — POSIX shell (Linux, macOS, WSL,
   Git Bash), rendering through `awk`.
 
 Both read the same data-file format, so output is identical regardless of where

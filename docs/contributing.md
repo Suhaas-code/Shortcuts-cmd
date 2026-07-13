@@ -1,4 +1,4 @@
-# Contributor guide
+# Contributing
 
 Thanks for helping out. `shortcuts` is deliberately small and dependency-free —
 the bar for a change is that it keeps both scripts identical in behavior and adds
@@ -8,8 +8,8 @@ See [architecture.md](architecture.md) for how the pieces fit together.
 
 ## Golden rule: parity
 
-[`src/shortcuts.ps1`](../src/shortcuts.ps1) and
-[`src/shortcuts.sh`](../src/shortcuts.sh) must produce **byte-identical**
+[`src/shortcuts.ps1`](https://github.com/Suhaas-code/shortcuts-cmd/blob/main/src/shortcuts.ps1) and
+[`src/shortcuts.sh`](https://github.com/Suhaas-code/shortcuts-cmd/blob/main/src/shortcuts.sh) must produce **byte-identical**
 rendered output for the same data file. Any parsing or rendering change lands in
 **both** scripts in the same PR. When in doubt, diff their output.
 
@@ -57,7 +57,7 @@ rule → heading → row). If you add a token:
 
 ## Adding or editing shortcuts
 
-Edit the seed files under [`src/shortcuts/`](../src/shortcuts/):
+Edit the seed files under [`src/shortcuts/`](https://github.com/Suhaas-code/shortcuts-cmd/tree/main/src/shortcuts):
 
 - `windows.txt` — Windows Terminal
 - `linux.txt` — terminal + readline + tmux

@@ -19,7 +19,7 @@
   <a href="#quick-example">Quick example</a> ·
   <a href="#commands">Commands</a> ·
   <a href="#customization">Customization</a> ·
-  <a href="docs/">Docs</a>
+  <a href="https://suhaas-code.github.io/shortcuts-cmd/">Docs site</a>
 </p>
 
 ---
@@ -116,11 +116,14 @@ Colors: **[docs/colors.md](docs/colors.md)**
 
 ## Documentation
 
+Full docs, rendered: **[suhaas-code.github.io/shortcuts-cmd](https://suhaas-code.github.io/shortcuts-cmd/)**
+
+- **[CLI Reference](docs/reference.md)** — every command, flags, and behavior
 - **[Installation](docs/installation.md)** — install, uninstall, where files live
 - **[Customization](docs/customization.md)** — data-file format and Markdown-lite
 - **[Colors](docs/colors.md)** — theming and turning color off
 - **[Architecture](docs/architecture.md)** — how it works, repo layout, releases
-- **[Contributor guide](docs/contributor-guide.md)** — developing and releasing
+- **[Contributing](docs/contributing.md)** — developing and releasing
 - **[Changelog](CHANGELOG.md)** — release history
 
 ## License

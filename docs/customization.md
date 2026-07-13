@@ -9,16 +9,8 @@ Run `shortcuts edit` and make it yours. The data file is plain text:
 key<TAB>description
 ```
 
-For colors, see [colors.md](colors.md).
-
-## Auto-adding tool shortcuts
-
-`shortcuts autoadd` scans your `PATH` for popular CLI tools (Claude Code, Codex,
-opencode, Aider, Gemini, Vim, Neovim, git, tmux, fzf, Docker, kubectl) and
-appends a small starter section for each one it finds. It previews what it will
-add, asks before writing (`-y` skips the prompt), and skips any section whose
-heading you already have. The added rows are ordinary lines you can then
-`shortcuts edit` and tailor.
+For colors, see [colors.md](colors.md). To seed sections automatically instead
+of writing them by hand, see [`shortcuts autoadd`](reference.md#shortcuts-autoadd).
 
 ## Format
 
