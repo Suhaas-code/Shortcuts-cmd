@@ -7,7 +7,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$VERSION  = '1.6.1'
+$VERSION  = '1.7.0'
 $REPO     = 'Suhaas-code/shortcuts-cmd'
 $BASE_URL = "https://github.com/$REPO/releases/latest/download"
 
@@ -164,6 +164,7 @@ function Show-Shortcuts([string] $Filter, [string] $PageName = '') {
     $sections = New-Object System.Collections.ArrayList
     $cur = $null
     $maxk = 0
+    $inRaw = $false
 
     function New-Section($name, $level) {
         $s = [ordered]@{ Name = $name; Level = $level; Rows = (New-Object System.Collections.ArrayList) }
@@ -172,6 +173,13 @@ function Show-Shortcuts([string] $Filter, [string] $PageName = '') {
     }
 
     foreach ($line in $lines) {
+        if ($inRaw) {                                               # inside a !!! fenced plaintext block
+            if ($line -match '^\s*!{3,}\s*$') { $inRaw = $false; continue }
+            if ($null -eq $cur) { $cur = New-Section 'General' 1 }
+            [void]$cur.Rows.Add(@{ Type = 'raw'; Key = $line; Desc = '' })
+            continue
+        }
+        if ($line -match '^\s*!{3,}\s*$') { $inRaw = $true; continue }   # open fence
         if ($line -match '^\s*$') { continue }
         if ($line -match '^\s*//') { continue }                    # comment / color directive
         if ($line -match '^\s*(-{3,}|\*{3,}|_{3,})\s*$') {         # horizontal rule
@@ -182,6 +190,13 @@ function Show-Shortcuts([string] $Filter, [string] $PageName = '') {
         if ($line -match '^\s*#') {                                # heading (any level)
             $m = [regex]::Match($line, '^\s*(#+)\s*(.*?)\s*#*\s*$')
             $cur = New-Section ($m.Groups[2].Value.Trim()) ($m.Groups[1].Value.Length)
+            continue
+        }
+        if ($line -match '^!') {                                   # single-line plaintext (! prefix)
+            $raw = $line.Substring(1)
+            if ($raw.StartsWith(' ')) { $raw = $raw.Substring(1) }
+            if ($null -eq $cur) { $cur = New-Section 'General' 1 }
+            [void]$cur.Rows.Add(@{ Type = 'raw'; Key = $raw; Desc = '' })
             continue
         }
         $k = ''; $d = ''
@@ -208,9 +223,9 @@ function Show-Shortcuts([string] $Filter, [string] $PageName = '') {
             # A term matching the section heading returns every row in that section;
             # otherwise fall back to matching the row's key/description.
             if ($s.Name.ToLower().Contains($f)) {
-                $rows = @($s.Rows | Where-Object { $_.Type -eq 'row' })
+                $rows = @($s.Rows | Where-Object { $_.Type -eq 'row' -or $_.Type -eq 'raw' })
             } else {
-                $rows = @($s.Rows | Where-Object { $_.Type -eq 'row' -and ($_.Key.ToLower().Contains($f) -or $_.Desc.ToLower().Contains($f)) })
+                $rows = @($s.Rows | Where-Object { ($_.Type -eq 'row' -or $_.Type -eq 'raw') -and ($_.Key.ToLower().Contains($f) -or $_.Desc.ToLower().Contains($f)) })
             }
         }
         if ($rows.Count -eq 0) { continue }
@@ -221,6 +236,8 @@ function Show-Shortcuts([string] $Filter, [string] $PageName = '') {
         foreach ($r in $rows) {
             if ($r.Type -eq 'rule') {
                 Write-Host (Format-Colored $cRule ('-' * 32))
+            } elseif ($r.Type -eq 'raw') {
+                Write-Host (Format-Colored $cKey $r.Key)
             } elseif ($r.Desc -eq '') {
                 Write-Host (Format-Field $r.Key $cKey $cCode)
             } else {

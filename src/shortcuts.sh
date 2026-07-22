@@ -3,7 +3,7 @@
 # https://github.com/Suhaas-code/shortcuts-cmd
 set -euo pipefail
 
-VERSION="1.6.1"
+VERSION="1.7.0"
 REPO="Suhaas-code/shortcuts-cmd"
 BASE_URL="https://github.com/${REPO}/releases/latest/download"
 
@@ -177,6 +177,13 @@ render() {
     }
     {
       line=$0
+      if (in_raw) {                             # inside a !!! fenced plaintext block
+        if (line ~ /^[[:space:]]*!{3,}[[:space:]]*$/) { in_raw=0; next }
+        if (n_sec==0){ n_sec=1; sec_name[1]="General"; sec_lvl[1]=1; sec_rows[1]=0 }
+        r=++sec_rows[n_sec]; rtype[n_sec,r]="raw"; rk[n_sec,r]=line
+        next
+      }
+      if (line ~ /^[[:space:]]*!{3,}[[:space:]]*$/) { in_raw=1; next }   # open fence
       if (line ~ /^[[:space:]]*$/) next
       if (line ~ /^[[:space:]]*\/\//) next     # comment / directive line
       if (line ~ /^[[:space:]]*(-{3,}|\*{3,}|_{3,})[[:space:]]*$/) {   # horizontal rule
@@ -189,6 +196,12 @@ render() {
         lvl=0; while(substr(h,1,1)=="#"){ lvl++; h=substr(h,2) }
         sub(/[[:space:]]*#*[[:space:]]*$/,"",h)
         n_sec++; sec_name[n_sec]=trim(h); sec_lvl[n_sec]=lvl; sec_rows[n_sec]=0
+        next
+      }
+      if (line ~ /^!/) {                        # single-line plaintext (! prefix)
+        raw=substr(line,2); sub(/^ /,"",raw)
+        if (n_sec==0){ n_sec=1; sec_name[1]="General"; sec_lvl[1]=1; sec_rows[1]=0 }
+        r=++sec_rows[n_sec]; rtype[n_sec,r]="raw"; rk[n_sec,r]=raw
         next
       }
       # row: split on first TAB, else on 2+ spaces
@@ -231,6 +244,7 @@ render() {
         for(m=1;m<=cnt;m++){
           j=mrows[m]
           if(rtype[i,j]=="rule"){ print wrap(rulecol, "--------------------------------"); continue }
+          if(rtype[i,j]=="raw"){ print wrap(KEY, rk[i,j]); continue }
           kk=rk[i,j]; dd=rd[i,j]
           kv=kk; gsub(/`/,"",kv)
           if(dd==""){ print colorize(kk, KEY) }

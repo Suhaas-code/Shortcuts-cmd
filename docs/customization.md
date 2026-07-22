@@ -29,6 +29,14 @@ of writing them by hand, see [`shortcuts autoadd`](reference.md#shortcuts-autoad
   Equivalent to `NO_COLOR`, but it travels inside the file.
 - **`// ...`** — a comment. Ignored when printing.
 - Blank lines are ignored.
+- **`!!!` ... `!!!`** — a plaintext fence. Everything between a line of just
+  `!!!` and the next such line prints exactly as written, in the key color,
+  with no row-splitting, no `` `key` `` highlighting, and no `**bold**` /
+  `*italic*` parsing. Use it for pasted secrets, prompts, IPs, or any block
+  that shouldn't be read as a shortcut.
+- **`!text`** — a single plaintext line, shorthand for a one-line `!!!` fence.
+  The leading `!` (and one space after it, if present) is stripped; the rest
+  prints verbatim in the key color.
 
 Example:
 
@@ -40,6 +48,13 @@ git co      checkout
 # tmux
 `Ctrl+b` `%`    split vertical
 `Ctrl+b` `"`    split horizontal
+
+# Notes
+!api-key-a1b2c3d4
+!!!
+Reminder to self: this block is never parsed as shortcuts —
+`backticks`, **bold**, and _italic_ all print as literal characters.
+!!!
 ```
 
 ## Markdown, adapted for the terminal
@@ -56,6 +71,7 @@ What carries over, what changed, and what is intentionally left out:
 | `---` / `***` / `___` | Horizontal rule |
 | `<TAB>` between two cells | **shortcuts-specific**: splits a line into `key → description`, auto-aligned |
 | `// comment` | **shortcuts-specific**: a comment / `// color` directive (not Markdown) |
+| ` ``` ` code fence | **Repurposed as `!!!`**: backticks already mean *key highlight* here, so a plaintext fence uses `!!!` instead — see [Format](#format) above |
 
 **Different from standard Markdown, on purpose:**
 
@@ -68,6 +84,6 @@ What carries over, what changed, and what is intentionally left out:
   (piped output, `NO_COLOR`, or `// ansi = off`) — only the markers are stripped.
 
 **Deferred for the TUI experience** (written as plain text if you use them):
-tables, images, links, multi-line code fences, blockquotes, ordered/nested and
-task lists, and raw HTML. A cheat-sheet row is a `key → description` pair, so
-those block elements have no place to render.
+tables, images, links, blockquotes, ordered/nested and task lists, and raw
+HTML. A cheat-sheet row is a `key → description` pair, so those block
+elements have no place to render.

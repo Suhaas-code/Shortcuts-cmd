@@ -1,5 +1,7 @@
 // Comment (never shown). "# Section" = header, "key<TAB>description" = row.
 // `backtick` a key to color it. **bold** *italic* _italic_ = emphasis. "---" = rule.
+// "!!!" fences a plaintext block (passwords, IPs, pasted text) — no parsing,
+// one color. "!line" does the same for a single line.
 // "// ansi = off" disables all color/styling (for SSH/WSL that leak codes).
 // "// color <header|key|desc|code> = <spec>" sets colors (see README).
 // color header = bright-cyan
@@ -63,3 +65,10 @@
 `Ctrl` + `Delete`	Delete next word
 `Ctrl` + `L`	Clear screen
 `Ctrl` + `R`	Search history
+
+# Notes
+!!!
+Paste anything here — passwords, IPs, long prompts — and it prints as-is,
+in one color, with no `key`/description split and no **bold**/_italic_ parsing.
+!!!
+!Wrap a single line in "!" the same way, e.g. a lone API key or IP address.

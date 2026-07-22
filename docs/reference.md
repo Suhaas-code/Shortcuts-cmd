@@ -150,7 +150,9 @@ Filters output by `<term>` (case-insensitive). Two match modes:
 - **Term matches a section heading** — every row in that section is printed,
   in full.
 - **Otherwise** — only rows whose key or description contains `<term>` are
-  printed, across all sections.
+  printed, across all sections. Plaintext lines (see
+  [Customization → `!!!` / `!`](customization.md#format)) match on their
+  literal text the same way.
 
 Horizontal-rule rows (`---`) are dropped from filtered output either way.
 Omitting `<term>` is a usage error (`usage: shortcuts search <term>`, exit `1`).

@@ -28,17 +28,23 @@ docs/                      this documentation
 
 Each script parses the data file line by line, in this order:
 
-1. blank line → skipped
-2. `//` comment → skipped (but `// color …` and `// ansi …` directives are read)
-3. horizontal rule (`---` / `***` / `___`) → rule row
-4. heading (`#` / `##` / `###`) → section header
-5. otherwise → a `key<TAB>description` row (also splits on a run of 2+ spaces)
+1. inside a `!!!` fence → every line prints verbatim (key color, no parsing)
+   until the closing `!!!`
+2. a line of just `!!!` (outside a fence) → opens the fence
+3. blank line → skipped
+4. `//` comment → skipped (but `// color …` and `// ansi …` directives are read)
+5. horizontal rule (`---` / `***` / `___`) → rule row
+6. heading (`#` / `##` / `###`) → section header
+7. `!`-prefixed line → a single plaintext row (verbatim, key color, no parsing)
+8. otherwise → a `key<TAB>description` row (also splits on a run of 2+ spaces)
 
 Fields are split on backticks: text outside gets the base color plus inline
 emphasis (`**bold**`, `*italic*`, `_italic_`); text inside gets the code/key
 color verbatim. Key column width ignores backticks and emphasis markers, so
 columns align on visible width. Emphasis uses accumulating ANSI codes with
 attribute-off codes (`22`/`23`) so styling never drops the surrounding color.
+Plaintext rows (`!!!` fences and `!`-prefixed lines) skip this entirely —
+they print as one flat color with markers stripped, never split or parsed.
 
 ## Environment-matched defaults
 
