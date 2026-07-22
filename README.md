@@ -94,7 +94,7 @@ Opening shortcuts in the default editor...
 | `shortcuts search <term>` | Filter by keyword — or by section heading to show the whole section |
 | `shortcuts autoadd [-y]` | Detect installed CLI tools and add a starter shortcut section for each |
 | `shortcuts edit [page]` | Open your shortcuts (or a named page) in your editor |
-| `shortcuts path` | Print the data file path |
+| `shortcuts path` | Print the path of every shortcut file, by name |
 | `shortcuts reset [-y]` | Restore the default shortcuts |
 | `shortcuts update` | Update the `shortcuts` script itself |
 | `shortcuts version` | Neofetch-style banner: version, environment, counts |

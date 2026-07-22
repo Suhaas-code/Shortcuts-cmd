@@ -17,7 +17,7 @@ implement identical commands and produce byte-identical output — see
 | [`search <term>`](#shortcuts-search-term) | Filter by keyword or section heading |
 | [`autoadd [-y]`](#shortcuts-autoadd) | Add starter shortcuts for detected CLI tools |
 | [`edit`](#shortcuts-edit) | Open your shortcuts in your editor |
-| [`path`](#shortcuts-path) | Print the data-file path |
+| [`path`](#shortcuts-path) | Print the path of every shortcut file, by name |
 | [`reset [-y]`](#shortcuts-reset) | Restore the default shortcuts |
 | [`update`](#shortcuts-update) | Update the `shortcuts` script itself |
 | [`version`](#shortcuts-version) | Neofetch-style banner: version, environment, counts |
@@ -36,6 +36,13 @@ Any unrecognized command prints usage and exits `1` — to stderr on
 `shortcuts.sh`; `shortcuts.ps1` writes it via `Write-Host`, which lands on the
 host/information stream rather than stderr, so redirecting `2>` won't catch it
 on Windows. This is the one output divergence between the two scripts.
+
+Every error (bad page name, missing argument, download failure, ...) is
+printed as `shortcuts: <message>` with the `shortcuts:` tag colored bold red —
+one consistent error marker across the whole CLI, in the same style as
+`git`/`cargo`. Respects `NO_COLOR` and falls back to plain text on a
+non-terminal, same as the rest of the color system (see
+[Customization](customization.md)).
 
 ---
 
@@ -236,13 +243,22 @@ shortcuts path
 shortcuts where    # alias
 ```
 
-Prints the data-file path for the current environment and exits — no other
-side effects, and it prints the path even if the file doesn't exist yet.
+Prints one `<name>  <path>` line per shortcut file and exits — no other side
+effects. `default` is always listed first, even if `shortcuts.txt` doesn't
+exist yet; any [pages](#shortcuts-page) found in the config directory follow,
+name-column-aligned to the longest name.
 
-| Environment | Data file |
+```console
+$ shortcuts path
+default           ~/.config/shortcuts/shortcuts.txt
+alpha             ~/.config/shortcuts/shortcuts-alpha.txt
+betaverylongname  ~/.config/shortcuts/shortcuts-betaverylongname.txt
+```
+
+| Environment | Config directory |
 |---|---|
-| Unix (Linux/macOS/WSL/Git Bash) | `${XDG_CONFIG_HOME:-~/.config}/shortcuts/shortcuts.txt` |
-| Windows (PowerShell/cmd) | `%APPDATA%\shortcuts\shortcuts.txt` |
+| Unix (Linux/macOS/WSL/Git Bash) | `${XDG_CONFIG_HOME:-~/.config}/shortcuts/` |
+| Windows (PowerShell/cmd) | `%APPDATA%\shortcuts\` |
 
 ---
 
@@ -272,13 +288,21 @@ shortcuts upgrade    # alias
 ```
 
 Re-downloads the `shortcuts` **script itself** (not your data file) from the
-latest GitHub release and overwrites it in place.
+latest GitHub release and overwrites it in place. Prints `Updating
+shortcuts...`, then a colored `Updated` line — with an old → new version
+number if the release changed, or just the path if you're already current.
 
 - **POSIX:** downloads to a temp file, `chmod +x`, then `mv`s it over the
   resolved install path — avoids truncating a script that's currently
   executing.
-- **PowerShell:** overwrites `$PSCommandPath` directly (falls back to the
-  default install location if unset).
+- **PowerShell:** downloads to a temp file, then copies it over
+  `$PSCommandPath` (falls back to the default install location if unset).
+
+```console
+$ shortcuts update
+Updating shortcuts...
+Updated shortcuts (1.6.0 → 1.6.1) at ~/.local/bin/shortcuts
+```
 
 ---
 

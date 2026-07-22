@@ -5,6 +5,15 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1]
+
+### Changed
+- All errors now print with a bold-red `shortcuts:` tag — one consistent
+  error marker across the whole CLI (matches `git`/`cargo` convention),
+  respecting `NO_COLOR`/non-tty like the rest of the color system.
+- `update` now prints `Updating shortcuts...` while it fetches, then a
+  colored `Updated` line showing the old → new version when it changes.
+
 ## [1.6.0]
 
 ### Added
@@ -72,7 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: offline, dependency-free keyboard-shortcut cheat sheet with
   `list`, `search`, `edit`, `path`, `reset`, `update`, `version`, and `help`.
 
-[Unreleased]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.4.0...v1.5.0

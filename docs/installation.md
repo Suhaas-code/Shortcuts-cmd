@@ -39,7 +39,8 @@ prints to enable `shortcuts` in your **current** shell without restarting.
 | Data file | `~/.config/shortcuts/shortcuts.txt` | `%APPDATA%\shortcuts\shortcuts.txt` |
 | Script | `~/.local/bin/shortcuts` | `%LOCALAPPDATA%\Programs\shortcuts\` |
 
-`shortcuts path` always prints the data file the current environment uses.
+`shortcuts path` always prints the paths (default plus any pages) the current
+environment uses.
 
 > **Note:** On Windows, a native PowerShell/cmd install and a Git Bash/WSL
 > install keep **separate** data files — each environment is self-contained.

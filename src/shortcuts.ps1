@@ -7,7 +7,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$VERSION  = '1.6.0'
+$VERSION  = '1.6.1'
 $REPO     = 'Suhaas-code/shortcuts-cmd'
 $BASE_URL = "https://github.com/$REPO/releases/latest/download"
 
@@ -127,7 +127,11 @@ function Format-Field([string] $text, [string] $baseColor, [string] $codeColor) 
     $sb.ToString()
 }
 
-function Die($msg) { Write-Error "shortcuts: $msg"; exit 1 }
+function Die($msg) {
+    $hdr = ConvertTo-Ansi 'bold red'
+    [Console]::Error.WriteLine((Format-Colored $hdr 'shortcuts:') + " $msg")
+    exit 1
+}
 
 function Get-File($url, $dest) {
     try {
@@ -296,11 +300,33 @@ function Show-Pages {
     if (-not $found) { Write-Host 'No pages yet. Create one: shortcuts new <name>' }
 }
 
+function Show-Paths {
+    $cfg = Get-ConfigDir
+    $df = Get-DataFile
+    $pages = Get-ChildItem -Path $cfg -Filter 'shortcuts-*.txt' -File -ErrorAction SilentlyContinue |
+        ForEach-Object { [pscustomobject]@{ Name = ($_.BaseName -replace '^shortcuts-', ''); Path = $_.FullName } }
+    $w = [Math]::Max(7, (($pages | ForEach-Object { $_.Name.Length } | Measure-Object -Maximum).Maximum))
+    Write-Host ('default'.PadRight($w) + '  ' + $df)
+    foreach ($p in $pages) { Write-Host ($p.Name.PadRight($w) + '  ' + $p.Path) }
+}
+
 function Invoke-Update {
     $dest = $PSCommandPath
     if (-not $dest) { $dest = Join-Path $env:LOCALAPPDATA 'Programs\shortcuts\shortcuts.ps1' }
-    Get-File "$BASE_URL/shortcuts.ps1" $dest
-    Write-Host "Updated shortcuts at $dest"
+    Write-Host 'Updating shortcuts...'
+    $tmp = [System.IO.Path]::GetTempFileName()
+    Get-File "$BASE_URL/shortcuts.ps1" $tmp
+    $newVer = $null
+    $verMatch = Select-String -LiteralPath $tmp -Pattern "^\`$VERSION\s*=\s*'([^']+)'" | Select-Object -First 1
+    if ($verMatch) { $newVer = $verMatch.Matches[0].Groups[1].Value }
+    Copy-Item -Force $tmp $dest
+    Remove-Item -Force $tmp
+    $hdr = ConvertTo-Ansi 'bold green'
+    if ($newVer -and $newVer -ne $VERSION) {
+        Write-Host ((Format-Colored $hdr 'Updated') + " shortcuts ($VERSION → $newVer) at $dest")
+    } else {
+        Write-Host ((Format-Colored $hdr 'Updated') + " shortcuts at $dest")
+    }
 }
 
 # neofetch-style banner for `shortcuts version`.
@@ -612,7 +638,7 @@ switch ($Command.ToLower()) {
         Confirm-Data; Show-Shortcuts $Rest[0]
     }
     'autoadd'   { Invoke-AutoAdd $Rest }
-    { $_ -in 'path','where' } { Write-Host (Get-DataFile) }
+    { $_ -in 'path','where' } { Show-Paths }
     'reset'     { Invoke-Reset $Rest }
     { $_ -in 'update','upgrade' } { Invoke-Update }
     { $_ -in 'version','-v','--version' } { Show-Version }

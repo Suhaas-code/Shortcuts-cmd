@@ -3,7 +3,7 @@
 # https://github.com/Suhaas-code/shortcuts-cmd
 set -euo pipefail
 
-VERSION="1.6.0"
+VERSION="1.6.1"
 REPO="Suhaas-code/shortcuts-cmd"
 BASE_URL="https://github.com/${REPO}/releases/latest/download"
 
@@ -109,7 +109,13 @@ parse_color_directives() { # file  — read `// color <target> = <spec>` lines
   done < "$1"
 }
 
-die() { printf 'shortcuts: %s\n' "$1" >&2; exit 1; }
+die() { # colored "shortcuts:" prefix in red (git/cargo-style error marker)
+  local hdr rst
+  hdr="$(ansi_seq "bold red")"
+  [ "$COLOR_ON" = 1 ] && rst=$'\033[0m' || rst=""
+  printf '%sshortcuts:%s %s\n' "$hdr" "$rst" "$1" >&2
+  exit 1
+}
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -270,7 +276,21 @@ cmd_search() {
   [ -n "${1:-}" ] || die "usage: shortcuts search <term>"
   ensure_data; parse_color_directives "$(data_file)"; render "$1" < "$(data_file)"
 }
-cmd_path()   { printf '%s\n' "$(data_file)"; }
+cmd_path() {
+  local cfg df pf name longest=7
+  cfg="$(config_dir)"; df="$(data_file)"
+  for pf in "$cfg"/shortcuts-*.txt; do
+    [ -e "$pf" ] || continue
+    name="$(basename "$pf" .txt)"; name="${name#shortcuts-}"
+    [ "${#name}" -gt "$longest" ] && longest="${#name}"
+  done
+  printf '%-*s  %s\n' "$longest" "default" "$df"
+  for pf in "$cfg"/shortcuts-*.txt; do
+    [ -e "$pf" ] || continue
+    name="$(basename "$pf" .txt)"; name="${name#shortcuts-}"
+    printf '%-*s  %s\n' "$longest" "$name" "$pf"
+  done
+}
 
 cmd_edit() { # [name]
   local name="${1:-}" ed pf
@@ -347,13 +367,22 @@ cmd_reset() {
 }
 
 cmd_update() {
-  local dest; dest="$(command -v shortcuts || true)"
+  local dest tmp newver hdr rst
+  dest="$(command -v shortcuts || true)"
   [ -n "$dest" ] || dest="$HOME/.local/bin/shortcuts"
-  local tmp; tmp="$(mktemp)"
+  tmp="$(mktemp)"
+  printf 'Updating shortcuts...\n'
   fetch "${BASE_URL}/shortcuts.sh" "$tmp" || die "download failed"
   chmod +x "$tmp"
+  newver="$(sed -n 's/^VERSION="\(.*\)"$/\1/p' "$tmp" | head -1)"
   mv "$tmp" "$dest"
-  printf 'Updated shortcuts at %s\n' "$dest"
+  hdr="$(ansi_seq "bold green")"
+  [ "$COLOR_ON" = 1 ] && rst=$'\033[0m' || rst=""
+  if [ -n "$newver" ] && [ "$newver" != "$VERSION" ]; then
+    printf '%sUpdated%s shortcuts (%s → %s) at %s\n' "$hdr" "$rst" "$VERSION" "$newver" "$dest"
+  else
+    printf '%sUpdated%s shortcuts at %s\n' "$hdr" "$rst" "$dest"
+  fi
 }
 
 # neofetch-style banner for `shortcuts version`.
