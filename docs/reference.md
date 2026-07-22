@@ -200,6 +200,26 @@ Detected by executable name on `PATH`:
 | fzf | `fzf` | `Ctrl+R`, `Ctrl+T`, `Alt+C`, `Tab`, `Enter` |
 | Docker | `docker` | `docker ps`, `docker images`, `docker build`, `docker run`, `docker exec`, `docker logs` |
 | kubectl | `kubectl` | `kubectl get`, `kubectl describe`, `kubectl logs`, `kubectl apply`, `kubectl exec`, `kubectl delete` |
+| ripgrep | `rg` | `rg pattern`, `rg -i`, `rg -n`, `rg -w`, `rg -l`, `rg -t py`, `rg -A 3 -B 3` |
+| jq | `jq` | `` jq '.' ``, `` jq '.field' ``, `` jq '.[]' ``, `jq -r`, `jq -c`, `jq -s`, `` jq 'select(...)' `` |
+| GitHub CLI | `gh` | `gh pr create`, `gh pr list`, `gh pr checkout`, `gh pr view --web`, `gh issue create`, `gh repo clone`, `gh repo create` |
+| Terraform | `terraform` | `terraform init`, `terraform plan`, `terraform apply`, `terraform destroy`, `terraform fmt`, `terraform validate`, `terraform show` |
+| FFmpeg | `ffmpeg` | `ffmpeg -i`, `-c:v libx264`, `-crf 23`, `-vn`, `-an`, `-ss`, `-c copy` |
+| uv (Python) | `uv` | `uv init`, `uv add`, `uv remove`, `uv run`, `uv sync`, `uv venv`, `uv python install` |
+| Cargo | `cargo` | `cargo new`, `cargo build`, `cargo run`, `cargo test`, `cargo add`, `cargo check`, `cargo clippy` |
+| Redis CLI | `redis-cli` | `SET`, `GET`, `DEL`, `KEYS *`, `EXPIRE`, `TTL`, `exit` |
+| MongoDB Shell | `mongosh` | `show dbs`, `use <db>`, `show collections`, `db.<coll>.find()`, `db.<coll>.insertOne()`, `db.help()`, `exit` |
+| MySQL CLI | `mysql` | `SHOW DATABASES;`, `USE <db>;`, `SHOW TABLES;`, `DESCRIBE <table>;`, `SELECT * FROM <table>;`, `help`, `quit` |
+| Tree | `tree` | `tree`, `tree -L 2`, `tree -a`, `tree -d`, `tree -f`, `tree --dirsfirst`, `` tree -I 'pattern' `` |
+| Rclone | `rclone` | `rclone config`, `rclone lsd`, `rclone ls`, `rclone copy`, `rclone sync`, `rclone move`, `rclone mount` |
+| 7-Zip | `7z` | `7z a`, `7z x`, `7z e`, `7z l`, `7z t`, `7z u`, `7z d` |
+| yt-dlp | `yt-dlp` | `yt-dlp URL`, `yt-dlp -f`, `yt-dlp -x --audio-format mp3`, `yt-dlp -o`, `yt-dlp -F`, `yt-dlp --write-subs`, `yt-dlp -U` |
+| Poetry | `poetry` | `poetry add`, `poetry install`, `poetry update`, `poetry remove`, `poetry show`, `poetry run`, `poetry build` |
+| npm | `npm` | `npm install`, `npm install <pkg>`, `npm run <script>`, `npm ci`, `npm update`, `npm uninstall <pkg>`, `npm list` |
+| pnpm | `pnpm` | `pnpm install`, `pnpm add <pkg>`, `pnpm run <script>`, `pnpm dlx <pkg>`, `pnpm update`, `pnpm remove <pkg>`, `pnpm list` |
+| SQLite3 | `sqlite3` | `sqlite3 <file>`, `.tables`, `.schema <table>`, `.headers on`, `.mode column`, `.dump`, `.quit` |
+| AWS CLI | `aws` | `aws configure`, `aws sts get-caller-identity`, `aws s3 ls`, `aws s3 cp`, `aws ec2 describe-instances`, `aws configure list`, `aws help` |
+| Google Cloud CLI | `gcloud` | `gcloud init`, `gcloud auth login`, `gcloud config set project <id>`, `gcloud config list`, `gcloud compute instances list`, `gcloud projects list`, `gcloud components update` |
 
 The rows it adds are ordinary data-file lines — [`shortcuts edit`](#shortcuts-edit)
 afterward to tailor them. See [Customization](customization.md) for the

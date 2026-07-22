@@ -3,7 +3,7 @@
 # https://github.com/Suhaas-code/shortcuts-cmd
 set -euo pipefail
 
-VERSION="1.7.0"
+VERSION="1.8.0"
 REPO="Suhaas-code/shortcuts-cmd"
 BASE_URL="https://github.com/${REPO}/releases/latest/download"
 
@@ -511,7 +511,7 @@ cmd_uninstall() {
 # Starter shortcut sets for popular CLI tools, probed by executable name with
 # have(). Intentionally small — edit them after adding. The section text
 # produced here is kept byte-identical with shortcuts.ps1.
-AUTOADD_TOOLS="claude codex opencode aider gemini vim nvim git tmux fzf docker kubectl"
+AUTOADD_TOOLS="claude codex opencode aider gemini vim nvim git tmux fzf docker kubectl rg jq gh terraform ffmpeg uv cargo redis-cli mongosh mysql tree rclone 7z yt-dlp poetry npm pnpm sqlite3 aws gcloud"
 
 tool_name() { # exe -> section heading
   case "$1" in
@@ -527,6 +527,26 @@ tool_name() { # exe -> section heading
     fzf)      printf 'fzf' ;;
     docker)   printf 'Docker' ;;
     kubectl)  printf 'kubectl' ;;
+    rg)        printf 'ripgrep' ;;
+    jq)        printf 'jq' ;;
+    gh)        printf 'GitHub CLI' ;;
+    terraform) printf 'Terraform' ;;
+    ffmpeg)    printf 'FFmpeg' ;;
+    uv)        printf 'uv (Python)' ;;
+    cargo)     printf 'Cargo' ;;
+    redis-cli) printf 'Redis CLI' ;;
+    mongosh)   printf 'MongoDB Shell' ;;
+    mysql)     printf 'MySQL CLI' ;;
+    tree)      printf 'Tree' ;;
+    rclone)    printf 'Rclone' ;;
+    7z)        printf '7-Zip' ;;
+    yt-dlp)    printf 'yt-dlp' ;;
+    poetry)    printf 'Poetry' ;;
+    npm)       printf 'npm' ;;
+    pnpm)      printf 'pnpm' ;;
+    sqlite3)   printf 'SQLite3' ;;
+    aws)       printf 'AWS CLI' ;;
+    gcloud)    printf 'Google Cloud CLI' ;;
   esac
 }
 
@@ -627,6 +647,166 @@ tool_block() { # exe -> section text (heading + `key`<TAB>desc rows)
       aa_row '`kubectl apply`'     'Apply a manifest'
       aa_row '`kubectl exec`'      'Run a command in a pod'
       aa_row '`kubectl delete`'    'Delete resources' ;;
+    rg)
+      aa_row '`rg pattern`'  'Recursively search current directory'
+      aa_row '`rg -i`'       'Case-insensitive search'
+      aa_row '`rg -n`'       'Show line numbers'
+      aa_row '`rg -w`'       'Match whole words only'
+      aa_row '`rg -l`'       'List matching filenames only'
+      aa_row '`rg -t py`'    'Filter search by file type'
+      aa_row '`rg -A 3 -B 3`' 'Show lines of context' ;;
+    jq)
+      aa_row "\`jq '.'\`"          'Pretty-print JSON'
+      aa_row "\`jq '.field'\`"     'Access a field'
+      aa_row "\`jq '.[]'\`"        'Iterate array elements'
+      aa_row '`jq -r`'            'Output raw strings (no quotes)'
+      aa_row '`jq -c`'            'Compact one-line output'
+      aa_row '`jq -s`'            'Slurp inputs into one array'
+      aa_row "\`jq 'select(...)'\`" 'Filter by condition' ;;
+    gh)
+      aa_row '`gh pr create`'    'Open a pull request'
+      aa_row '`gh pr list`'      'List pull requests'
+      aa_row '`gh pr checkout`'  'Check out a PR locally'
+      aa_row '`gh pr view --web`' 'Open PR in browser'
+      aa_row '`gh issue create`' 'Open an issue'
+      aa_row '`gh repo clone`'   'Clone a repository'
+      aa_row '`gh repo create`'  'Create a new repository' ;;
+    terraform)
+      aa_row '`terraform init`'     'Initialize working directory'
+      aa_row '`terraform plan`'     'Preview infrastructure changes'
+      aa_row '`terraform apply`'    'Apply configuration changes'
+      aa_row '`terraform destroy`'  'Tear down infrastructure'
+      aa_row '`terraform fmt`'      'Format config files'
+      aa_row '`terraform validate`' 'Check config for errors'
+      aa_row '`terraform show`'     'Show current state' ;;
+    ffmpeg)
+      aa_row '`ffmpeg -i`'      'Specify input file'
+      aa_row '`-c:v libx264`'   'Encode video as H.264'
+      aa_row '`-crf 23`'        'Set quality (lower = better)'
+      aa_row '`-vn`'            'Strip video, keep audio'
+      aa_row '`-an`'            'Strip audio, keep video'
+      aa_row '`-ss`'            'Seek to a start time'
+      aa_row '`-c copy`'        'Copy streams, skip re-encode' ;;
+    uv)
+      aa_row '`uv init`'           'Create a new project'
+      aa_row '`uv add`'            'Add a dependency'
+      aa_row '`uv remove`'         'Remove a dependency'
+      aa_row '`uv run`'            'Run a script/command in project env'
+      aa_row '`uv sync`'           'Install deps from lockfile'
+      aa_row '`uv venv`'           'Create a virtual environment'
+      aa_row '`uv python install`' 'Install a Python version' ;;
+    cargo)
+      aa_row '`cargo new`'    'Create a new project'
+      aa_row '`cargo build`'  'Compile the project'
+      aa_row '`cargo run`'    'Build and run'
+      aa_row '`cargo test`'   'Run tests'
+      aa_row '`cargo add`'    'Add a dependency'
+      aa_row '`cargo check`'  'Fast type-check without building'
+      aa_row '`cargo clippy`' 'Lint for common mistakes' ;;
+    redis-cli)
+      aa_row '`SET`'    "Set a key's value"
+      aa_row '`GET`'    "Get a key's value"
+      aa_row '`DEL`'    'Delete a key'
+      aa_row '`KEYS *`' 'List keys matching a pattern'
+      aa_row '`EXPIRE`' "Set a key's TTL in seconds"
+      aa_row '`TTL`'    'Show remaining time to live'
+      aa_row '`exit`'   'Quit the shell' ;;
+    mongosh)
+      aa_row '`show dbs`'             'List databases'
+      aa_row '`use <db>`'             'Switch/create database'
+      aa_row '`show collections`'     'List collections in current db'
+      aa_row '`db.<coll>.find()`'     'Query documents'
+      aa_row '`db.<coll>.insertOne()`' 'Insert a document'
+      aa_row '`db.help()`'            'List db methods'
+      aa_row '`exit`'                 'Quit the shell' ;;
+    mysql)
+      aa_row '`SHOW DATABASES;`'      'List databases'
+      aa_row '`USE <db>;`'            'Switch database'
+      aa_row '`SHOW TABLES;`'         'List tables in current db'
+      aa_row '`DESCRIBE <table>;`'    'Show table structure'
+      aa_row '`SELECT * FROM <table>;`' 'Query rows'
+      aa_row '`help`'                 'List client commands'
+      aa_row '`quit`'                 'Exit the shell (or exit)' ;;
+    tree)
+      aa_row '`tree`'             'Show directory tree'
+      aa_row '`tree -L 2`'        'Limit depth to N levels'
+      aa_row '`tree -a`'          'Include hidden files'
+      aa_row '`tree -d`'          'List directories only'
+      aa_row '`tree -f`'          'Show full path per entry'
+      aa_row '`tree --dirsfirst`' 'List directories before files'
+      aa_row "\`tree -I 'pattern'\`" 'Exclude files matching pattern' ;;
+    rclone)
+      aa_row '`rclone config`' 'Set up a remote'
+      aa_row '`rclone lsd`'    'List directories on a remote'
+      aa_row '`rclone ls`'     'List files on a remote'
+      aa_row '`rclone copy`'   'Copy files (no deletions)'
+      aa_row '`rclone sync`'   'Make destination match source'
+      aa_row '`rclone move`'   'Move files to remote'
+      aa_row '`rclone mount`'  'Mount remote as local filesystem' ;;
+    7z)
+      aa_row '`7z a`' 'Add files to archive'
+      aa_row '`7z x`' 'Extract with full paths'
+      aa_row '`7z e`' 'Extract, flatten paths'
+      aa_row '`7z l`' 'List archive contents'
+      aa_row '`7z t`' 'Test archive integrity'
+      aa_row '`7z u`' 'Update files in archive'
+      aa_row '`7z d`' 'Delete files from archive' ;;
+    yt-dlp)
+      aa_row '`yt-dlp URL`'    'Download video'
+      aa_row '`yt-dlp -f`'     'Select format/quality'
+      aa_row '`yt-dlp -x --audio-format mp3`' 'Extract audio only'
+      aa_row '`yt-dlp -o`'     'Set output filename template'
+      aa_row '`yt-dlp -F`'     'List available formats'
+      aa_row '`yt-dlp --write-subs`' 'Download subtitles'
+      aa_row '`yt-dlp -U`'     'Update yt-dlp itself' ;;
+    poetry)
+      aa_row '`poetry add`'     'Add a dependency'
+      aa_row '`poetry install`' 'Install project dependencies'
+      aa_row '`poetry update`'  'Update dependencies to latest'
+      aa_row '`poetry remove`'  'Remove a dependency'
+      aa_row '`poetry show`'    'List installed packages'
+      aa_row '`poetry run`'     'Run command in venv'
+      aa_row '`poetry build`'   'Build sdist and wheel' ;;
+    npm)
+      aa_row '`npm install`'        'Install dependencies from package.json'
+      aa_row '`npm install <pkg>`'  'Add a package (saves to deps)'
+      aa_row '`npm run <script>`'   'Run a package.json script'
+      aa_row '`npm ci`'             'Clean install from lockfile (CI)'
+      aa_row '`npm update`'         'Update packages within semver range'
+      aa_row '`npm uninstall <pkg>`' 'Remove a package'
+      aa_row '`npm list`'           'List installed packages/tree' ;;
+    pnpm)
+      aa_row '`pnpm install`'      'Install dependencies from lockfile'
+      aa_row '`pnpm add <pkg>`'    'Add a dependency'
+      aa_row '`pnpm run <script>`' 'Run a package.json script'
+      aa_row '`pnpm dlx <pkg>`'    'Run a package without installing'
+      aa_row '`pnpm update`'       'Update dependencies in range'
+      aa_row '`pnpm remove <pkg>`' 'Remove a dependency'
+      aa_row '`pnpm list`'         'List installed packages' ;;
+    sqlite3)
+      aa_row '`sqlite3 <file>`'   'Open or create a database'
+      aa_row '`.tables`'          'List tables in the database'
+      aa_row '`.schema <table>`'  'Show CREATE statement for a table'
+      aa_row '`.headers on`'      'Show column headers in output'
+      aa_row '`.mode column`'     'Pretty-print query results in columns'
+      aa_row '`.dump`'            'Export database as SQL text'
+      aa_row '`.quit`'            'Exit the shell' ;;
+    aws)
+      aa_row '`aws configure`'               'Set up access keys, region, output'
+      aa_row '`aws sts get-caller-identity`' 'Show current caller/account identity'
+      aa_row '`aws s3 ls`'                   'List S3 buckets or objects'
+      aa_row '`aws s3 cp`'                   'Copy files to/from S3'
+      aa_row '`aws ec2 describe-instances`'  'List EC2 instances'
+      aa_row '`aws configure list`'          'Show active credential/config settings'
+      aa_row '`aws help`'                    'Show help for a service or command' ;;
+    gcloud)
+      aa_row '`gcloud init`'                    'Interactive setup: auth, project, defaults'
+      aa_row '`gcloud auth login`'              'Authenticate a user account'
+      aa_row '`gcloud config set project <id>`' 'Set default project'
+      aa_row '`gcloud config list`'             'Show active configuration'
+      aa_row '`gcloud compute instances list`'  'List Compute Engine VMs'
+      aa_row '`gcloud projects list`'           'List accessible projects'
+      aa_row '`gcloud components update`'       'Update installed SDK components' ;;
   esac
 }
 

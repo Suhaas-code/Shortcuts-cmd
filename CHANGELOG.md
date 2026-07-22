@@ -5,6 +5,14 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0]
+
+### Added
+- `autoadd` now detects 20 more CLI tools: ripgrep (`rg`), `jq`, GitHub CLI
+  (`gh`), Terraform, FFmpeg, `uv`, Cargo, Redis CLI, MongoDB Shell
+  (`mongosh`), MySQL CLI, `tree`, Rclone, 7-Zip (`7z`), `yt-dlp`, Poetry,
+  `npm`, `pnpm`, SQLite3, AWS CLI, and Google Cloud CLI (`gcloud`).
+
 ## [1.7.0]
 
 ### Added
@@ -91,7 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: offline, dependency-free keyboard-shortcut cheat sheet with
   `list`, `search`, `edit`, `path`, `reset`, `update`, `version`, and `help`.
 
-[Unreleased]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/Suhaas-code/shortcuts-cmd/compare/v1.5.1...v1.6.0

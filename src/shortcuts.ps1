@@ -7,7 +7,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$VERSION  = '1.7.0'
+$VERSION  = '1.8.0'
 $REPO     = 'Suhaas-code/shortcuts-cmd'
 $BASE_URL = "https://github.com/$REPO/releases/latest/download"
 
@@ -568,6 +568,186 @@ $script:ToolLibrary = @(
         @('`kubectl apply`',     'Apply a manifest'),
         @('`kubectl exec`',      'Run a command in a pod'),
         @('`kubectl delete`',    'Delete resources')
+    )},
+    @{ Exe = 'rg'; Name = 'ripgrep'; Rows = @(
+        @('`rg pattern`',   'Recursively search current directory'),
+        @('`rg -i`',        'Case-insensitive search'),
+        @('`rg -n`',        'Show line numbers'),
+        @('`rg -w`',        'Match whole words only'),
+        @('`rg -l`',        'List matching filenames only'),
+        @('`rg -t py`',     'Filter search by file type'),
+        @('`rg -A 3 -B 3`', 'Show lines of context')
+    )},
+    @{ Exe = 'jq'; Name = 'jq'; Rows = @(
+        @('`jq ''.''`',           'Pretty-print JSON'),
+        @('`jq ''.field''`',      'Access a field'),
+        @('`jq ''.[]''`',         'Iterate array elements'),
+        @('`jq -r`',              'Output raw strings (no quotes)'),
+        @('`jq -c`',              'Compact one-line output'),
+        @('`jq -s`',              'Slurp inputs into one array'),
+        @('`jq ''select(...)''`', 'Filter by condition')
+    )},
+    @{ Exe = 'gh'; Name = 'GitHub CLI'; Rows = @(
+        @('`gh pr create`',     'Open a pull request'),
+        @('`gh pr list`',       'List pull requests'),
+        @('`gh pr checkout`',   'Check out a PR locally'),
+        @('`gh pr view --web`', 'Open PR in browser'),
+        @('`gh issue create`',  'Open an issue'),
+        @('`gh repo clone`',    'Clone a repository'),
+        @('`gh repo create`',   'Create a new repository')
+    )},
+    @{ Exe = 'terraform'; Name = 'Terraform'; Rows = @(
+        @('`terraform init`',     'Initialize working directory'),
+        @('`terraform plan`',     'Preview infrastructure changes'),
+        @('`terraform apply`',    'Apply configuration changes'),
+        @('`terraform destroy`',  'Tear down infrastructure'),
+        @('`terraform fmt`',      'Format config files'),
+        @('`terraform validate`', 'Check config for errors'),
+        @('`terraform show`',     'Show current state')
+    )},
+    @{ Exe = 'ffmpeg'; Name = 'FFmpeg'; Rows = @(
+        @('`ffmpeg -i`',    'Specify input file'),
+        @('`-c:v libx264`', 'Encode video as H.264'),
+        @('`-crf 23`',      'Set quality (lower = better)'),
+        @('`-vn`',          'Strip video, keep audio'),
+        @('`-an`',          'Strip audio, keep video'),
+        @('`-ss`',          'Seek to a start time'),
+        @('`-c copy`',      'Copy streams, skip re-encode')
+    )},
+    @{ Exe = 'uv'; Name = 'uv (Python)'; Rows = @(
+        @('`uv init`',           'Create a new project'),
+        @('`uv add`',            'Add a dependency'),
+        @('`uv remove`',         'Remove a dependency'),
+        @('`uv run`',            'Run a script/command in project env'),
+        @('`uv sync`',           'Install deps from lockfile'),
+        @('`uv venv`',           'Create a virtual environment'),
+        @('`uv python install`', 'Install a Python version')
+    )},
+    @{ Exe = 'cargo'; Name = 'Cargo'; Rows = @(
+        @('`cargo new`',    'Create a new project'),
+        @('`cargo build`',  'Compile the project'),
+        @('`cargo run`',    'Build and run'),
+        @('`cargo test`',   'Run tests'),
+        @('`cargo add`',    'Add a dependency'),
+        @('`cargo check`',  'Fast type-check without building'),
+        @('`cargo clippy`', 'Lint for common mistakes')
+    )},
+    @{ Exe = 'redis-cli'; Name = 'Redis CLI'; Rows = @(
+        @('`SET`',    'Set a key''s value'),
+        @('`GET`',    'Get a key''s value'),
+        @('`DEL`',    'Delete a key'),
+        @('`KEYS *`', 'List keys matching a pattern'),
+        @('`EXPIRE`', 'Set a key''s TTL in seconds'),
+        @('`TTL`',    'Show remaining time to live'),
+        @('`exit`',   'Quit the shell')
+    )},
+    @{ Exe = 'mongosh'; Name = 'MongoDB Shell'; Rows = @(
+        @('`show dbs`',              'List databases'),
+        @('`use <db>`',              'Switch/create database'),
+        @('`show collections`',      'List collections in current db'),
+        @('`db.<coll>.find()`',      'Query documents'),
+        @('`db.<coll>.insertOne()`', 'Insert a document'),
+        @('`db.help()`',             'List db methods'),
+        @('`exit`',                  'Quit the shell')
+    )},
+    @{ Exe = 'mysql'; Name = 'MySQL CLI'; Rows = @(
+        @('`SHOW DATABASES;`',       'List databases'),
+        @('`USE <db>;`',             'Switch database'),
+        @('`SHOW TABLES;`',          'List tables in current db'),
+        @('`DESCRIBE <table>;`',     'Show table structure'),
+        @('`SELECT * FROM <table>;`', 'Query rows'),
+        @('`help`',                  'List client commands'),
+        @('`quit`',                  'Exit the shell (or exit)')
+    )},
+    @{ Exe = 'tree'; Name = 'Tree'; Rows = @(
+        @('`tree`',              'Show directory tree'),
+        @('`tree -L 2`',         'Limit depth to N levels'),
+        @('`tree -a`',           'Include hidden files'),
+        @('`tree -d`',           'List directories only'),
+        @('`tree -f`',           'Show full path per entry'),
+        @('`tree --dirsfirst`',  'List directories before files'),
+        @('`tree -I ''pattern''`', 'Exclude files matching pattern')
+    )},
+    @{ Exe = 'rclone'; Name = 'Rclone'; Rows = @(
+        @('`rclone config`', 'Set up a remote'),
+        @('`rclone lsd`',    'List directories on a remote'),
+        @('`rclone ls`',     'List files on a remote'),
+        @('`rclone copy`',   'Copy files (no deletions)'),
+        @('`rclone sync`',   'Make destination match source'),
+        @('`rclone move`',   'Move files to remote'),
+        @('`rclone mount`',  'Mount remote as local filesystem')
+    )},
+    @{ Exe = '7z'; Name = '7-Zip'; Rows = @(
+        @('`7z a`', 'Add files to archive'),
+        @('`7z x`', 'Extract with full paths'),
+        @('`7z e`', 'Extract, flatten paths'),
+        @('`7z l`', 'List archive contents'),
+        @('`7z t`', 'Test archive integrity'),
+        @('`7z u`', 'Update files in archive'),
+        @('`7z d`', 'Delete files from archive')
+    )},
+    @{ Exe = 'yt-dlp'; Name = 'yt-dlp'; Rows = @(
+        @('`yt-dlp URL`',                       'Download video'),
+        @('`yt-dlp -f`',                        'Select format/quality'),
+        @('`yt-dlp -x --audio-format mp3`',     'Extract audio only'),
+        @('`yt-dlp -o`',                        'Set output filename template'),
+        @('`yt-dlp -F`',                        'List available formats'),
+        @('`yt-dlp --write-subs`',              'Download subtitles'),
+        @('`yt-dlp -U`',                        'Update yt-dlp itself')
+    )},
+    @{ Exe = 'poetry'; Name = 'Poetry'; Rows = @(
+        @('`poetry add`',     'Add a dependency'),
+        @('`poetry install`', 'Install project dependencies'),
+        @('`poetry update`',  'Update dependencies to latest'),
+        @('`poetry remove`',  'Remove a dependency'),
+        @('`poetry show`',    'List installed packages'),
+        @('`poetry run`',     'Run command in venv'),
+        @('`poetry build`',   'Build sdist and wheel')
+    )},
+    @{ Exe = 'npm'; Name = 'npm'; Rows = @(
+        @('`npm install`',         'Install dependencies from package.json'),
+        @('`npm install <pkg>`',   'Add a package (saves to deps)'),
+        @('`npm run <script>`',    'Run a package.json script'),
+        @('`npm ci`',              'Clean install from lockfile (CI)'),
+        @('`npm update`',          'Update packages within semver range'),
+        @('`npm uninstall <pkg>`', 'Remove a package'),
+        @('`npm list`',            'List installed packages/tree')
+    )},
+    @{ Exe = 'pnpm'; Name = 'pnpm'; Rows = @(
+        @('`pnpm install`',      'Install dependencies from lockfile'),
+        @('`pnpm add <pkg>`',    'Add a dependency'),
+        @('`pnpm run <script>`', 'Run a package.json script'),
+        @('`pnpm dlx <pkg>`',    'Run a package without installing'),
+        @('`pnpm update`',       'Update dependencies in range'),
+        @('`pnpm remove <pkg>`', 'Remove a dependency'),
+        @('`pnpm list`',         'List installed packages')
+    )},
+    @{ Exe = 'sqlite3'; Name = 'SQLite3'; Rows = @(
+        @('`sqlite3 <file>`',  'Open or create a database'),
+        @('`.tables`',         'List tables in the database'),
+        @('`.schema <table>`', 'Show CREATE statement for a table'),
+        @('`.headers on`',     'Show column headers in output'),
+        @('`.mode column`',    'Pretty-print query results in columns'),
+        @('`.dump`',           'Export database as SQL text'),
+        @('`.quit`',           'Exit the shell')
+    )},
+    @{ Exe = 'aws'; Name = 'AWS CLI'; Rows = @(
+        @('`aws configure`',               'Set up access keys, region, output'),
+        @('`aws sts get-caller-identity`', 'Show current caller/account identity'),
+        @('`aws s3 ls`',                   'List S3 buckets or objects'),
+        @('`aws s3 cp`',                   'Copy files to/from S3'),
+        @('`aws ec2 describe-instances`',  'List EC2 instances'),
+        @('`aws configure list`',          'Show active credential/config settings'),
+        @('`aws help`',                    'Show help for a service or command')
+    )},
+    @{ Exe = 'gcloud'; Name = 'Google Cloud CLI'; Rows = @(
+        @('`gcloud init`',                    'Interactive setup: auth, project, defaults'),
+        @('`gcloud auth login`',              'Authenticate a user account'),
+        @('`gcloud config set project <id>`', 'Set default project'),
+        @('`gcloud config list`',             'Show active configuration'),
+        @('`gcloud compute instances list`',  'List Compute Engine VMs'),
+        @('`gcloud projects list`',           'List accessible projects'),
+        @('`gcloud components update`',       'Update installed SDK components')
     )}
 )
 
